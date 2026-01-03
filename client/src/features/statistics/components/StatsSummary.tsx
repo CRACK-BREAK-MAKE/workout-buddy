@@ -17,7 +17,7 @@ export const StatsSummary = ({ stats }: StatsSummaryProps) => {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900">Your Progress</h2>
+      <h2 className="text-2xl font-bold text-neutral-900 dark:text-neutral-50">Your Progress</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard

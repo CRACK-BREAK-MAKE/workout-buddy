@@ -59,10 +59,12 @@ export const HomePage = () => {
         <div className="space-y-12">
           {/* Welcome Section */}
           <div className="text-center">
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+            <h1 className="text-4xl md:text-5xl font-bold text-neutral-900 dark:text-neutral-50 mb-4">
               Welcome back, {userName}! 👋
             </h1>
-            <p className="text-xl text-gray-600">Ready to crush your workout today?</p>
+            <p className="text-xl text-neutral-600 dark:text-neutral-400">
+              Ready to crush your workout today?
+            </p>
           </div>
 
           {/* Statistics Summary */}
@@ -77,12 +79,12 @@ export const HomePage = () => {
           {/* Hero Section */}
           <div className="text-center max-w-4xl mx-auto">
             <div className="text-8xl mb-6">💪</div>
-            <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
+            <h1 className="text-5xl md:text-6xl font-bold text-neutral-900 dark:text-neutral-50 mb-6">
               Your AI-Powered
               <br />
-              <span className="text-indigo-600">Workout Companion</span>
+              <span className="text-primary-600 dark:text-primary-400">Workout Companion</span>
             </h1>
-            <p className="text-xl md:text-2xl text-gray-600 mb-8">
+            <p className="text-xl md:text-2xl text-neutral-600 dark:text-neutral-400 mb-8">
               Count your reps automatically with computer vision.
               <br />
               No wearables. No manual tracking. Just you and your workout.
@@ -101,24 +103,30 @@ export const HomePage = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             <div className="text-center space-y-4">
               <div className="text-5xl">🤖</div>
-              <h3 className="text-2xl font-bold text-gray-900">AI-Powered</h3>
-              <p className="text-gray-600">
+              <h3 className="text-2xl font-bold text-neutral-900 dark:text-neutral-50">
+                AI-Powered
+              </h3>
+              <p className="text-neutral-600 dark:text-neutral-400">
                 MediaPipe pose detection counts your reps with 95%+ accuracy
               </p>
             </div>
 
             <div className="text-center space-y-4">
               <div className="text-5xl">🔒</div>
-              <h3 className="text-2xl font-bold text-gray-900">Privacy First</h3>
-              <p className="text-gray-600">
+              <h3 className="text-2xl font-bold text-neutral-900 dark:text-neutral-50">
+                Privacy First
+              </h3>
+              <p className="text-neutral-600 dark:text-neutral-400">
                 All processing happens in your browser. Your video never leaves your device.
               </p>
             </div>
 
             <div className="text-center space-y-4">
               <div className="text-5xl">📊</div>
-              <h3 className="text-2xl font-bold text-gray-900">Track Progress</h3>
-              <p className="text-gray-600">
+              <h3 className="text-2xl font-bold text-neutral-900 dark:text-neutral-50">
+                Track Progress
+              </h3>
+              <p className="text-neutral-600 dark:text-neutral-400">
                 Monitor your improvements with detailed statistics and personal records
               </p>
             </div>
@@ -126,8 +134,10 @@ export const HomePage = () => {
 
           {/* Exercises Preview */}
           <div className="text-center">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Supported Exercises</h2>
-            <p className="text-gray-600 mb-8">
+            <h2 className="text-3xl font-bold text-neutral-900 dark:text-neutral-50 mb-4">
+              Supported Exercises
+            </h2>
+            <p className="text-neutral-600 dark:text-neutral-400 mb-8">
               Start with push-ups and jump rope. More exercises coming soon!
             </p>
             <div className="flex justify-center gap-8 text-6xl">
@@ -137,16 +147,16 @@ export const HomePage = () => {
           </div>
 
           {/* CTA Section */}
-          <div className="bg-indigo-600 rounded-2xl p-12 text-center text-white">
+          <div className="bg-primary-600 dark:bg-primary-700 rounded-2xl p-12 text-center text-white">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to Get Started?</h2>
-            <p className="text-xl mb-8 text-indigo-100">
+            <p className="text-xl mb-8 text-primary-100 dark:text-primary-200">
               Join thousands of users tracking their workouts with AI
             </p>
             <Button
               size="lg"
               variant="secondary"
               onClick={handleRegister}
-              className="bg-white text-indigo-600 hover:bg-gray-100"
+              className="bg-white text-primary-600 hover:bg-neutral-100 dark:bg-neutral-900 dark:text-primary-400 dark:hover:bg-neutral-800"
             >
               Create Free Account
             </Button>

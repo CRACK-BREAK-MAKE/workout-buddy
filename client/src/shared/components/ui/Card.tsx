@@ -14,9 +14,10 @@ export const Card = ({
   className,
   ...props
 }: CardProps) => {
-  const baseStyles = 'bg-white rounded-xl shadow-md border border-gray-100';
+  const baseStyles =
+    'bg-white dark:bg-neutral-800 rounded-xl shadow-md border border-neutral-200 dark:border-neutral-700';
   const hoverStyles = hover
-    ? 'hover:shadow-lg hover:border-indigo-200 transition-all cursor-pointer'
+    ? 'hover:shadow-lg hover:border-primary-200 dark:hover:border-primary-700 transition-all cursor-pointer'
     : '';
 
   const paddingStyles = {

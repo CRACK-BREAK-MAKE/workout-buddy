@@ -18,28 +18,31 @@ export const ExerciseCard = ({ exercise, onSelect }: ExerciseCardProps) => {
       <div className="text-6xl">{exercise.icon}</div>
 
       {/* Name */}
-      <h3 className="text-2xl font-bold text-gray-900">{exercise.name}</h3>
+      <h3 className="text-2xl font-bold text-neutral-900 dark:text-neutral-50">{exercise.name}</h3>
 
       {/* Difficulty Badge */}
       <span
         className={`px-3 py-1 rounded-full text-sm font-medium ${
           exercise.difficulty === 'Easy'
-            ? 'bg-green-100 text-green-800'
+            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
             : exercise.difficulty === 'Medium'
-              ? 'bg-yellow-100 text-yellow-800'
-              : 'bg-red-100 text-red-800'
+              ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+              : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
         }`}
       >
         {exercise.difficulty}
       </span>
 
       {/* Description */}
-      <p className="text-gray-600">{exercise.description}</p>
+      <p className="text-neutral-600 dark:text-neutral-400">{exercise.description}</p>
 
       {/* Target Muscles */}
       <div className="flex flex-wrap gap-2 justify-center">
         {exercise.targetMuscles.map(muscle => (
-          <span key={muscle} className="px-2 py-1 bg-indigo-50 text-indigo-700 text-xs rounded-md">
+          <span
+            key={muscle}
+            className="px-2 py-1 bg-primary-50 text-primary-700 dark:bg-primary-950 dark:text-primary-300 text-xs rounded-md"
+          >
             {muscle}
           </span>
         ))}
