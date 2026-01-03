@@ -4,6 +4,9 @@ import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
+  server: {
+    port: 7002,
+  },
   test: {
     globals: true,
     environment: 'happy-dom',
