@@ -1,1 +1,29 @@
+echo "🔍 Running client pre-commit checks..."
 pnpm exec lint-staged
+CLIENT_EXIT=$?
+
+echo ""
+echo "🐍 Running server pre-commit checks..."
+
+# Identify staged python files in the server directory
+PYTHON_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep '^server/.*\.py$' || true)
+
+if [ -n "$PYTHON_FILES" ]; then
+  PYTHON_FILES_RELATIVE=$(echo "$PYTHON_FILES" | sed 's|^server/||')
+
+  cd server
+  # Run only on changed files within the server environment
+  echo "$PYTHON_FILES_RELATIVE" | xargs uv run pre-commit run --files
+  SERVER_EXIT=$?
+  cd ..
+else
+  echo "  → No Python files staged, skipping server checks"
+  SERVER_EXIT=0
+fi
+
+if [ $CLIENT_EXIT -ne 0 ] || [ $SERVER_EXIT -ne 0 ]; then
+  echo "❌ Pre-commit checks failed!"
+  exit 1
+fi
+
+echo "✅ All checks passed!"

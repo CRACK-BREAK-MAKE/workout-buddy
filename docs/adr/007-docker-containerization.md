@@ -77,7 +77,7 @@ services:
       - ./client:/app  # Hot reload
     ports:
       - "5173:5173"
-  
+
   backend:
     build: ./server
     volumes:
@@ -86,7 +86,7 @@ services:
       - "8000:8000"
     depends_on:
       - db
-  
+
   db:
     image: postgres:18-alpine
     volumes:

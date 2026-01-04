@@ -1,15 +1,63 @@
 # Pre-commit Hooks Setup - Root Level (Monorepo)
 
 **Based on:** [ADR-012: Root-Level Pre-commit Hooks](../adr/012-root-level-pre-commit-hooks.md)
-**Last Updated:** 2026-01-03
+**Last Updated:** 2026-01-04
 
 ---
 
 ## Overview
 
-This guide implements root-level pre-commit hooks using Husky + lint-staged for the monorepo structure, following official [Husky documentation](https://typicode.github.io/husky/) guidance.
+This guide implements root-level pre-commit hooks using Husky + lint-staged (client) and pre-commit framework (server) for the monorepo structure.
 
-**Current Status:** ✅ Client created, ✅ Pre-commit hooks configured and tested
+**Current Status:** ✅ Client setup complete, ✅ Server setup complete, ✅ Production-ready
+
+---
+
+## Key Fixes Applied (Production-Ready)
+
+During implementation, we discovered and fixed several critical issues:
+
+### 1. Build & Environment Issue
+**Problem:** `uv sync` failed trying to build API as a distributable library.
+
+**Fix:** Added `package = false` to `server/pyproject.toml` - tells uv this is an application, not a package.
+
+### 2. Pre-commit Pathing (Exit Code 2 Errors)
+**Problem:** Tools (Ruff, MyPy) failed looking for pyproject.toml in wrong directory.
+
+**Fix:**
+- Updated Husky script to `cd server` before running
+- Used `uv run pre-commit` for auto-detection
+- Removed hardcoded `--config` flags to allow auto-discovery
+
+### 3. Vercel Deployment (ERR_INVALID_THIS)
+**Problem:** Node 24 + pnpm 10 fetch bug crashed Vercel builds.
+
+**Fix:** Pinned to Node 22 LTS + pnpm 9, added `.npmrc` with:
+```ini
+network-concurrency=1
+node-linker=hoisted
+```
+
+### 4. Monorepo Lockfile Strategy
+**Problem:** Missing root lockfile prevented Vercel workspace detection.
+
+**Fix:** Created root-level `pnpm-lock.yaml`, removed from `.gitignore`, committed it.
+
+### 5. Security & Enterprise Hardening
+**Problem:** Security checks were skipped or not strict enough.
+
+**Fix:**
+- Unified security under Ruff (S rules) - 100x faster than Bandit
+- Added `pip-audit` for vulnerable dependencies (CVEs)
+- Added `detect-secrets` with baseline to prevent committing secrets
+
+### 6. Script Reliability
+**Problem:** Manual `source .venv/bin/activate` is brittle.
+
+**Fix:** Switched to `uv run` which handles virtualenv automatically.
+
+---
 
 ---
 
@@ -429,27 +477,231 @@ Developer runs: git commit -m "feat: add feature"
 
 ---
 
-## Adding Server Hooks (Future)
+## Adding Server Hooks
 
-When the server is ready, simply update root `package.json`:
+### Step 1: Install Server Dependencies
+
+```bash
+cd server
+
+# Install dev dependencies with uv (includes pre-commit, ruff, mypy, etc.)
+uv sync --group dev
+
+# Verify pre-commit is installed
+uv run pre-commit --version
+```
+
+### Step 2: Create Server Pre-commit Configuration
+
+Create `server/.pre-commit-config.yaml`:
+
+```yaml
+default_language_version:
+  python: python3.13
+
+repos:
+  # Pre-commit built-in hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-added-large-files
+        args: ['--maxkb=1000']
+      - id: check-merge-conflict
+      - id: debug-statements
+
+  # detect-secrets - Find hardcoded API keys/passwords
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        args: ['--baseline', '.secrets.baseline']
+        exclude: package.json|pnpm-lock.yaml
+
+  # Ruff - Fast Python linter and formatter
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.9.1
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+      - id: ruff-format
+
+  # MyPy - Static type checker
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.13.0
+    hooks:
+      - id: mypy
+        additional_dependencies:
+          - pydantic>=2.10.0
+          - sqlalchemy>=2.0.0
+          - types-PyYAML
+        exclude: ^tests/
+
+  # pip-audit - Check for vulnerable dependencies (CVEs)
+  - repo: https://github.com/pypa/pip-audit
+    rev: v2.7.3
+    hooks:
+      - id: pip-audit
+        args: ["--requirement", "pyproject.toml"]
+```
+
+**Key features:**
+- **Ruff** replaces Black, isort, flake8, pyupgrade (10-100x faster)
+- **Ruff S rules** for security checks (replaces Bandit for better performance)
+- **detect-secrets** prevents committing API keys/passwords
+- **pip-audit** catches vulnerable dependencies (CVEs)
+- **MyPy** for type safety
+
+### Step 3: Initialize detect-secrets Baseline
+
+```bash
+cd server
+
+# Create baseline file (tracks known secrets like example API keys)
+uv run detect-secrets scan --baseline .secrets.baseline
+
+# Commit the baseline
+git add .secrets.baseline
+```
+
+### Step 4: Update Server pyproject.toml
+
+Ensure your `server/pyproject.toml` has proper configuration:
+
+```toml
+[project]
+name = "workout-buddy-api"
+requires-python = ">=3.13"
+package = false  # CRITICAL: Stops uv from trying to build as library
+
+dependencies = [
+  "fastapi>=0.128.0",
+  # ... other production deps
+]
+
+[dependency-groups]
+dev = [
+  "pytest>=8.3.0",
+  "ruff>=0.9.1",
+  "mypy>=1.14.0",
+  "pre-commit>=4.5.0",
+  "pip-audit>=2.7.3",
+  "detect-secrets>=1.5.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+# Includes security checks (S rules)
+select = ["E", "F", "I", "N", "W", "UP", "B", "A", "S"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+disallow_untyped_defs = true
+```
+
+**Critical fixes:**
+- `package = false` - Prevents uv from trying to build your app as a library
+- `[dependency-groups]` instead of `[project.optional-dependencies]` for uv
+- Ruff S rules for security (replaces Bandit)
+
+### Step 5: Update .husky/pre-commit Hook
+
+Update `.husky/pre-commit` to run both client and server checks:
+
+```bash
+cat > .husky/pre-commit << 'EOF'
+echo "🔍 Running client pre-commit checks..."
+pnpm exec lint-staged
+CLIENT_EXIT=$?
+
+echo ""
+echo "🐍 Running server pre-commit checks..."
+
+# Identify staged python files in the server directory
+PYTHON_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep '^server/.*\.py$' || true)
+
+if [ -n "$PYTHON_FILES" ]; then
+  # Strip 'server/' prefix for local execution
+  PYTHON_FILES_RELATIVE=$(echo "$PYTHON_FILES" | sed 's|^server/||')
+
+  cd server
+  # Use 'uv run' to ensure the environment is always correct and activated
+  echo "$PYTHON_FILES_RELATIVE" | xargs uv run pre-commit run --files
+  SERVER_EXIT=$?
+  cd ..
+else
+  echo "  → No Python files staged, skipping server checks"
+  SERVER_EXIT=0
+fi
+
+if [ $CLIENT_EXIT -ne 0 ] || [ $SERVER_EXIT -ne 0 ]; then
+  echo "❌ Pre-commit checks failed!"
+  exit 1
+fi
+
+echo "✅ All checks passed!"
+EOF
+```
+
+**Key improvements:**
+- Uses `uv run pre-commit` instead of manual `source .venv/bin/activate`
+- Automatically handles virtualenv detection and activation
+- Only runs server checks if Python files are staged (faster)
+- Strips `server/` prefix from file paths for correct tool resolution
+
+### Step 6: Update Root package.json
+
+Add server scripts to root `package.json`:
 
 ```json
 {
   "scripts": {
-    "lint:server": "cd server && uv run ruff check .",
-    "format:server": "cd server && uv run ruff format ."
-  },
-  "lint-staged": {
-    "client/**/*.{js,jsx,ts,tsx}": [ /* existing client rules */ ],
-    "server/**/*.py": [
-      "cd server && uv run ruff format",
-      "cd server && uv run ruff check --fix"
-    ]
+    "dev:server": "cd server && source .venv/bin/activate && uvicorn app.main:app --reload --host 0.0.0.0 --port 7001",
+    "test:server": "cd server && source .venv/bin/activate && pytest",
+    "lint:server": "cd server && source .venv/bin/activate && ruff check .",
+    "format:server": "cd server && source .venv/bin/activate && ruff format .",
+    "type-check:server": "cd server && source .venv/bin/activate && mypy app",
+    "precommit:server": "cd server && source .venv/bin/activate && pre-commit run --all-files"
   }
 }
 ```
 
-**No changes needed to `.husky/pre-commit`!** lint-staged will automatically pick up the new patterns.
+### Step 7: Test Server Hooks
+
+```bash
+# Create test file with security issues
+cat > server/app/test_security.py << 'EOF'
+import os
+
+PASSWORD = "hardcoded_secret_123"
+
+def dangerous_function():
+    os.system("rm -rf /")  # Ruff S605: shell injection
+EOF
+
+# Stage and try to commit
+git add server/app/test_security.py
+git commit -m "test: server hooks"
+```
+
+**Expected results:**
+- ✅ Ruff auto-fixes formatting
+- ❌ detect-secrets flags hardcoded password → **commit blocked**
+- ❌ Ruff flags dangerous os.system (S605) → **commit blocked**
+
+**Clean up:**
+```bash
+git reset HEAD server/app/test_security.py
+rm server/app/test_security.py
+```
 
 ---
 
@@ -588,6 +840,76 @@ After setup, ALWAYS verify:
 ---
 
 ## Troubleshooting
+
+### Server: "ModuleNotFoundError" or "Build Failed"
+
+**Problem:** `uv sync` fails with "ModuleNotFoundError" or tries to build your app as a library.
+
+**Solution:** Add `package = false` to `server/pyproject.toml`:
+
+```toml
+[project]
+name = "workout-buddy-api"
+package = false  # CRITICAL: Stops uv from building as library
+```
+
+### Server: "Could not read config file: pyproject.toml"
+
+**Problem:** Pre-commit tools (Ruff, Bandit) can't find pyproject.toml.
+
+**Root cause:** Running from wrong directory or hardcoded paths in pre-commit config.
+
+**Solution:**
+1. Husky hook must `cd server` before running tools
+2. Remove `--config` or `-c` flags from `.pre-commit-config.yaml` - let tools auto-discover config
+3. Use `uv run pre-commit` instead of manual virtualenv activation
+
+### Server: Pre-commit hooks are slow
+
+**Problem:** First-time runs install environments (MyPy, pip-audit take 1-2 minutes).
+
+**Solution:**
+- First run is slow (installs Python environments)
+- Subsequent runs are fast (environments cached in `~/.cache/pre-commit/`)
+- To speed up: Remove slow hooks like `pip-audit` during active development, add back before PR
+
+### Vercel Deployment: "ERR_INVALID_THIS" or Fetch Errors
+
+**Problem:** Vercel builds fail with low-level fetch errors during `pnpm install`.
+
+**Root cause:** Bug in Node 24 + pnpm 10 combination.
+
+**Solution:** Pin to Node 22 LTS + pnpm 9 in `vercel.json` and `.npmrc`:
+
+```json
+// vercel.json
+{
+  "buildCommand": "pnpm --version && pnpm build:client",
+  "installCommand": "pnpm install --frozen-lockfile",
+  "framework": null,
+  "outputDirectory": "client/dist"
+}
+```
+
+```ini
+# .npmrc
+network-concurrency=1
+node-linker=hoisted
+```
+
+### Missing Root Lockfile (Vercel Detection Issues)
+
+**Problem:** Vercel can't detect pnpm workspace properly.
+
+**Solution:**
+1. Create root-level `pnpm-lock.yaml` (not nested in client/)
+2. Remove `pnpm-lock.yaml` from `.gitignore`
+3. Commit root lockfile:
+   ```bash
+   pnpm install  # Generates root lockfile
+   git add pnpm-lock.yaml
+   git commit -m "chore: add root lockfile for vercel"
+   ```
 
 ### Hook not running
 

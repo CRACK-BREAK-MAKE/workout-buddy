@@ -1,0 +1,65 @@
+default_language_version:
+  python: python3.13
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-added-large-files
+        args: ['--maxkb=1000']
+      - id: check-merge-conflict
+      - id: debug-statements
+
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        args: ['--baseline', 'server/.secrets.baseline']
+        # EXCLUDE noise: lockfiles, docs, migrations, and docker configs
+        exclude: |
+          (?x)^(
+              pnpm-lock.yaml|
+              docs/.*|
+              server/alembic/.*|
+              server/.env.example|
+              server/alembic.ini|
+              docker-compose.yml|
+              .claude/.*|
+              .*\.md
+          )$
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.9.1
+    hooks:
+      - id: ruff
+        name: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+      - id: ruff-format
+        name: ruff-format
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.13.0
+    hooks:
+      - id: mypy
+        name: mypy
+        args: ["--config-file", "server/pyproject.toml"]
+        additional_dependencies:
+          - pydantic>=2.10.0
+          - pydantic-settings>=2.7.0  # FIX: Subclassing BaseSettings error
+          - sqlalchemy>=2.0.0
+          - types-python-jose
+          - types-passlib
+          - types-PyYAML
+        exclude: ^server/tests/|^server/alembic/
+
+# for vulnerabilities scan
+#  - repo: https://github.com/pypa/pip-audit
+#    rev: v2.7.3
+#    hooks:
+#      - id: pip-audit
+#        name: pip-audit
+#        args: ["server/", "--ignore-vuln", "GHSA-wj6h-64fc-37mp"]
