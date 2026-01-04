@@ -1,8 +1,13 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "git": {
+    "deploymentEnabled": {
+      "main": true
+    }
+  },
   "buildCommand": "cd client && pnpm install && pnpm build",
   "devCommand": "cd client && pnpm dev",
-  "installCommand": "pnpm install --prefix client",
+  "installCommand": "pnpm install --filter client",
   "outputDirectory": "client/dist",
   "framework": null,
   "rewrites": [
