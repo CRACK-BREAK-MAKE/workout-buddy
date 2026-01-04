@@ -474,6 +474,435 @@ GET /api/v1/statistics/exercise/:type     # By exercise type
 
 ---
 
+## PEP Standards & Pre-Commit Best Practices
+
+### Overview
+
+All code must pass pre-commit hooks before committing. These hooks enforce PEP standards and production-grade code quality. This section documents common issues and how to avoid them.
+
+### Pre-Commit Hooks Configuration
+
+Our pre-commit hooks check for:
+- ✅ Trailing whitespace removal
+- ✅ End of file fixes
+- ✅ YAML/TOML syntax validation
+- ✅ Large file detection
+- ✅ Merge conflict detection
+- ✅ Python debug statements
+- ✅ Secret detection
+- ✅ **Ruff linting** (14 rule categories)
+- ✅ **Ruff formatting** (auto-format code)
+- ✅ **MyPy type checking** (strict mode)
+- ✅ **Pip-audit** (security vulnerabilities)
+
+### Critical PEP Standards
+
+#### 1. **PEP 8 - Style Guide** ⭐️ MANDATORY
+
+**Line Length:** 100 characters (configured in ruff)
+
+**Naming Conventions:**
+```python
+# ✅ CORRECT
+class UserService:           # PascalCase for classes
+    def get_user_by_id():   # snake_case for functions
+        MAX_RETRIES = 3     # SCREAMING_SNAKE_CASE for constants
+        user_id = uuid4()   # snake_case for variables
+
+# ❌ INCORRECT
+class userService:          # Wrong: should be PascalCase
+    def GetUserById():     # Wrong: should be snake_case
+        maxRetries = 3     # Wrong: should be SCREAMING_SNAKE_CASE
+```
+
+**Import Naming:**
+```python
+# ✅ CORRECT
+from datetime import date
+from uuid import UUID
+
+# ❌ INCORRECT - N812: Lowercase imported as non-lowercase
+from datetime import date as DateType  # Wrong: alias doesn't match convention
+
+# ❌ INCORRECT - N811: Constant imported as non-constant
+from uuid import UUID as UUIDType      # Wrong: UUID is a type, not constant
+```
+
+**Exception Naming:**
+```python
+# ✅ CORRECT - N818: Exception names must end with "Error"
+class AuthError(Exception):
+    pass
+
+class OAuthError(Exception):
+    pass
+
+# ❌ INCORRECT
+class AuthException(Exception):    # Wrong: should be AuthError
+    pass
+
+class OAuthException(Exception):   # Wrong: should be OAuthError
+    pass
+```
+
+**Built-in Shadowing:**
+```python
+# ✅ CORRECT - A002: Don't shadow Python builtins
+async def get_by_id(self, record_id: UUID) -> ModelType | None:
+    result = await self.db.execute(
+        select(self.model).where(self.model.id == record_id)
+    )
+    return result.scalars().first()
+
+# ❌ INCORRECT - Shadows built-in `id()` function
+async def get_by_id(self, id: UUID) -> ModelType | None:  # Wrong
+    ...
+```
+
+#### 2. **PEP 484 - Type Hints** ⭐️ MANDATORY
+
+**All functions must have type hints:**
+```python
+# ✅ CORRECT
+def calculate_calories(reps: int, exercise_type: str) -> float:
+    return reps * 0.5
+
+async def get_user(user_id: UUID) -> User | None:
+    ...
+
+# ❌ INCORRECT - no-untyped-def
+def calculate_calories(reps, exercise_type):  # Wrong: missing types
+    return reps * 0.5
+```
+
+**Dict type parameters:**
+```python
+# ✅ CORRECT - type-arg: Always specify dict type parameters
+from typing import Any
+
+def get_stats() -> dict[str, Any]:
+    return {"total": 100, "average": 50.0}
+
+def decode_token(token: str) -> dict[str, Any] | None:
+    ...
+
+# ❌ INCORRECT - Missing type parameters
+def get_stats() -> dict:  # Wrong: missing type parameters
+    return {"total": 100}
+```
+
+**Optional types (Python 3.10+):**
+```python
+# ✅ CORRECT - Use `| None` for optional types
+from datetime import date
+
+def calculate_stats(end_date: date | None = None) -> dict[str, Any]:
+    if end_date is None:
+        end_date = date.today()
+    ...
+
+# ❌ INCORRECT - assignment: Implicit Optional not allowed
+def calculate_stats(end_date: date = None):  # Wrong: None doesn't match type
+    ...
+```
+
+**TYPE_CHECKING for circular imports:**
+```python
+# ✅ CORRECT - F821: Use TYPE_CHECKING to avoid circular imports
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from app.features.workouts.models.workout import Workout
+
+class User(Base):
+    workouts: Mapped[list["Workout"]] = relationship(...)
+
+# ❌ INCORRECT - Direct import causes circular dependency
+from app.features.workouts.models.workout import Workout  # Wrong: circular import
+
+class User(Base):
+    workouts: Mapped[list[Workout]] = relationship(...)
+```
+
+**Explicit type annotations:**
+```python
+# ✅ CORRECT - var-annotated: Always annotate dict/list comprehensions
+from typing import Any
+
+grouped: dict[date, list[Workout]] = {}
+for workout in workouts:
+    date_key = workout.created_at.date()
+    if date_key not in grouped:
+        grouped[date_key] = []
+    grouped[date_key].append(workout)
+
+# ❌ INCORRECT - MyPy can't infer complex types
+grouped = {}  # Wrong: needs type annotation
+for workout in workouts:
+    ...
+```
+
+**Type casts for Any returns:**
+```python
+# ✅ CORRECT - no-any-return: Use cast() for JSON/dict operations
+from typing import cast
+
+def exchange_code_for_token(code: str) -> str:
+    response = await client.post(TOKEN_URL, data={"code": code})
+    token_data = response.json()
+    return cast(str, token_data["access_token"])  # Explicit cast
+
+# ❌ INCORRECT - Returning Any from str function
+def exchange_code_for_token(code: str) -> str:
+    response = await client.post(TOKEN_URL, data={"code": code})
+    token_data = response.json()
+    return token_data["access_token"]  # Wrong: returns Any
+```
+
+#### 3. **PEP 3134 - Exception Chaining** ⭐️ MANDATORY
+
+**Always use `from e` or `from None`:**
+```python
+# ✅ CORRECT - B904: Exception chaining preserves traceback
+try:
+    user_id = UUID(payload["sub"])
+except (KeyError, ValueError) as e:
+    raise HTTPException(
+        status_code=401,
+        detail="Invalid token payload"
+    ) from e  # ✅ Preserves original error
+
+# Alternative: Suppress context if not relevant
+try:
+    result = parse_data(data)
+except ParseError:
+    raise ValidationError("Invalid data") from None  # ✅ Hides original
+
+# ❌ INCORRECT - Lost traceback information
+try:
+    user_id = UUID(payload["sub"])
+except (KeyError, ValueError):
+    raise HTTPException(status_code=401, detail="Invalid")  # Wrong: no `from e`
+```
+
+#### 4. **Python 3.14 Compatibility Issues**
+
+**Pydantic date type annotation:**
+```python
+# ✅ CORRECT - Use explicit import name
+from datetime import date
+
+class DailyStats(BaseModel):
+    date: date = Field(..., description="Date")
+
+# ❌ INCORRECT - Python 3.14 compatibility issue with Pydantic
+from datetime import date as DateType  # Wrong: causes Pydantic error
+
+class DailyStats(BaseModel):
+    date: DateType = Field(...)  # Wrong: Pydantic can't process alias
+```
+
+**SQLAlchemy UUID type collision:**
+```python
+# ✅ CORRECT - Alias SQLAlchemy UUID type
+from uuid import UUID
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
+
+class Workout(Base):
+    user_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("users.id")
+    )
+
+# ❌ INCORRECT - Name collision
+from uuid import UUID
+from sqlalchemy.dialects.postgresql import UUID  # Wrong: conflicts with uuid.UUID
+
+class Workout(Base):
+    user_id: Mapped[UUID] = mapped_column(
+        UUID(as_uuid=True), ...  # Wrong: which UUID?
+    )
+```
+
+#### 5. **Generic Type Handling**
+
+**SQLAlchemy generics with type ignore:**
+```python
+# ✅ CORRECT - attr-defined: Use targeted type ignore for generics
+class BaseRepository[ModelType: Base]:
+    async def get_by_id(self, record_id: UUID) -> ModelType | None:
+        # Type ignore needed because mypy doesn't understand generic model access
+        result = await self.db.execute(
+            select(self.model).where(
+                self.model.id == record_id  # type: ignore[attr-defined]
+            )
+        )
+        return result.scalars().first()
+
+# ❌ INCORRECT - MyPy error on generic attribute
+class BaseRepository[ModelType: Base]:
+    async def get_by_id(self, record_id: UUID) -> ModelType | None:
+        result = await self.db.execute(
+            select(self.model).where(self.model.id == record_id)  # Error
+        )
+```
+
+**SQLAlchemy Result type handling:**
+```python
+# ✅ CORRECT - Handle None before accessing attributes
+async def get_stats(user_id: UUID) -> dict[str, Any]:
+    result = await self.db.execute(
+        select(
+            func.count(Workout.id).label("total"),
+            func.sum(Workout.reps_count).label("reps")
+        ).where(Workout.user_id == user_id)
+    )
+
+    stats = result.first()
+    if stats is None:  # ✅ Null check before access
+        return {"total": 0, "reps": 0}
+
+    return {
+        "total": stats.total or 0,
+        "reps": stats.reps or 0
+    }
+
+# ❌ INCORRECT - union-attr: Accessing None attributes
+async def get_stats(user_id: UUID) -> dict[str, Any]:
+    result = await self.db.execute(...)
+    stats = result.first()
+
+    return {
+        "total": stats.total,  # Wrong: stats might be None
+        "reps": stats.reps     # Wrong: stats might be None
+    }
+```
+
+**Remove unused type ignores:**
+```python
+# ✅ CORRECT - unused-ignore: Remove when TYPE_CHECKING fixes issue
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from app.features.workouts.models.workout import Workout
+
+class User(Base):
+    # TYPE_CHECKING import fixes the issue, no ignore needed
+    workouts: Mapped[list["Workout"]] = relationship(...)
+
+# ❌ INCORRECT - Type ignore no longer needed
+class User(Base):
+    workouts: Mapped[list["Workout"]] = relationship(...)  # type: ignore
+```
+
+### Common Pre-Commit Fixes
+
+#### Fix 1: Ruff Auto-Fix
+```bash
+# Auto-fix most ruff issues
+cd server
+uv run ruff check . --fix
+
+# Format code automatically
+uv run ruff format .
+```
+
+#### Fix 2: MyPy Type Errors
+```bash
+# Run mypy to see all errors
+cd server
+uv run mypy app
+
+# Common fixes:
+# - Add type hints to all functions
+# - Use dict[str, Any] instead of dict
+# - Add explicit type annotations for comprehensions
+# - Use cast() for JSON operations
+# - Add null checks before attribute access
+```
+
+#### Fix 3: Secret Detection
+```bash
+# Generate baseline (first time only)
+cd server
+uv run detect-secrets scan > .secrets.baseline
+
+# Update baseline when adding new secrets (tests, examples)
+uv run detect-secrets scan --baseline .secrets.baseline
+```
+
+### Pre-Commit Workflow
+
+**Before committing:**
+```bash
+# Run all checks manually
+cd /path/to/workout-buddy
+uv run --directory server pre-commit run --all-files
+
+# If errors, fix them:
+# 1. Ruff errors: uv run ruff check . --fix
+# 2. MyPy errors: Add types, null checks, casts
+# 3. Re-run pre-commit until all pass
+
+# Then commit
+git add .
+git commit -m "feat(api): add workout statistics endpoint"
+```
+
+**Common error patterns:**
+```bash
+# Error: B904 - Missing exception chain
+# Fix: Add `from e` or `from None`
+
+# Error: N818 - Exception naming
+# Fix: Rename XxxException to XxxError
+
+# Error: F821 - Undefined name
+# Fix: Add TYPE_CHECKING import
+
+# Error: A002 - Shadowing builtin
+# Fix: Rename parameter (id → record_id)
+
+# Error: type-arg - Missing dict type
+# Fix: Change dict to dict[str, Any]
+
+# Error: no-any-return - Returning Any
+# Fix: Use cast(str, value)
+
+# Error: union-attr - None attribute access
+# Fix: Add null check before accessing
+```
+
+### Integration with Settings
+
+**SecuritySettings instantiation:**
+```python
+# ✅ CORRECT - call-arg: Provide defaults for required fields
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+class SecuritySettings(BaseSettings):
+    SECRET_KEY: str = ""  # ✅ Default empty, .env overrides
+    DATABASE_URL: str = ""  # ✅ Default empty, .env overrides
+    ALGORITHM: str = "HS256"
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        case_sensitive=True,
+        extra="ignore"
+    )
+
+# Singleton - loads from .env automatically
+security_settings = SecuritySettings()  # ✅ No error
+
+# ❌ INCORRECT - Missing required arguments
+class SecuritySettings(BaseSettings):
+    SECRET_KEY: str  # Wrong: no default
+    DATABASE_URL: str  # Wrong: no default
+
+security_settings = SecuritySettings()  # Error: missing arguments
+```
+
+---
+
 ## Coding Standards
 
 ### General Rules
