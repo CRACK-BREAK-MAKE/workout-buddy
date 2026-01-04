@@ -319,7 +319,7 @@ import { cn } from '@/shared/utils/cn'
 
 // ❌ Bad - String concatenation
 <button className={
-  'px-4 py-2 rounded ' + 
+  'px-4 py-2 rounded ' +
   (isActive ? 'bg-blue-600 text-white ' : '') +
   (isDisabled ? 'opacity-50 cursor-not-allowed' : '')
 }>

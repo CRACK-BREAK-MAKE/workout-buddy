@@ -24,14 +24,36 @@ build/
 # Logs
 *.log
 
-# Python (for server later)
+# Python (server)
 __pycache__/
 *.py[cod]
+*.pyo
+*.pyd
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
 .venv/
 venv/
+*.egg
+*.egg-info/
+.eggs/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Testing & Coverage
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+.hypothesis/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
 
 # IMPORTANT: .husky/ directory should NOT be ignored
 # It contains git hooks that need to be committed to the repository

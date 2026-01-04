@@ -1,20 +1,21 @@
 {
   "name": "workout-buddy",
+  "version": "1.0.0",
+  "private": true,
   "packageManager": "pnpm@10.27.0",
   "engines": {
     "node": "24.x"
   },
-  "version": "1.0.0",
-  "private": true,
-  "description": "AI-powered exercise counting app",
   "scripts": {
     "prepare": "husky",
-    "dev:client": "cd client && pnpm dev",
-    "build:client": "cd client && pnpm build",
-    "test:client": "cd client && pnpm test:run",
-    "lint:client": "cd client && pnpm lint",
-    "format:client": "cd client && pnpm format",
-    "type-check:client": "cd client && pnpm type-check"
+    "dev:client": "pnpm --filter client dev",
+    "build:client": "pnpm --filter client build",
+    "dev:server": "cd server && uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 7001",
+    "test:server": "cd server && uv run pytest",
+    "lint:server": "cd server && uv run ruff check .",
+    "format:server": "cd server && uv run ruff format .",
+    "type-check:server": "cd server && uv run mypy app",
+    "precommit:server": "uv run --directory server pre-commit run --all-files"
   },
   "devDependencies": {
     "husky": "^9.1.7",

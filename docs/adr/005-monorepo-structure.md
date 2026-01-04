@@ -1,7 +1,7 @@
 # ADR-005: Monorepo Structure with Separate Frontend/Backend
 
-**Status:** Accepted  
-**Date:** 2026-01-02  
+**Status:** Accepted
+**Date:** 2026-01-02
 **Decision Makers:** Technical Lead, DevOps
 
 ## Context and Problem Statement
