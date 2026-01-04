@@ -2,7 +2,7 @@
   "name": "workout-buddy",
   "packageManager": "pnpm@9.15.9",
   "engines": {
-    "node": "24.x"
+    "node": "22.x"
   },
   "version": "1.0.0",
   "private": true,
