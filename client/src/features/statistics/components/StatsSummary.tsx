@@ -16,10 +16,9 @@ export const StatsSummary = ({ stats }: StatsSummaryProps) => {
   };
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-neutral-900 dark:text-neutral-50">Your Progress</h2>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="space-y-8">
+      {/* Overview Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           icon="🏋️"
           label="Total Workouts"
@@ -51,8 +50,13 @@ export const StatsSummary = ({ stats }: StatsSummaryProps) => {
 
       {/* Personal Records */}
       <div>
-        <h3 className="text-xl font-bold text-gray-900 mb-4">Personal Records 🏆</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-2xl font-bold text-neutral-900 dark:text-neutral-50">
+            Personal Records
+          </h3>
+          <span className="text-3xl">🏆</span>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <StatCard
             icon="💪"
             label="Push-ups"

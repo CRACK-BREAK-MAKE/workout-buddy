@@ -1,12 +1,12 @@
 export const Footer = () => {
   return (
-    <footer className="bg-neutral-100 dark:bg-neutral-800 border-t border-neutral-200 dark:border-neutral-700 mt-auto">
+    <footer className="bg-white/60 backdrop-blur-2xl border-t border-white/40 dark:bg-white/5 dark:border-white/10 mt-auto relative z-10">
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <span className="text-2xl">💪</span>
+            <img src="/workout.svg" alt="Workout Buddy" className="h-6 w-6" />
             <span className="text-neutral-600 dark:text-neutral-400">
-              © {new Date().getFullYear()} Workout Buddy. Built with ❤️
+              © {new Date().getFullYear()} Workout Buddy. All rights reserved.
             </span>
           </div>
 
