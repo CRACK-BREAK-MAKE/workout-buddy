@@ -1,5 +1,9 @@
 {
   "name": "workout-buddy",
+  "packageManager": "pnpm@9.15.9",
+  "engines": {
+    "node": "24.x"
+  },
   "version": "1.0.0",
   "private": true,
   "description": "AI-powered exercise counting app",
