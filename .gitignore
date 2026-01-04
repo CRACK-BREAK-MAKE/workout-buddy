@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+pnpm-lock.yaml
+
+# Environment
+.env
+.env*.local
+
+# Build outputs
+dist/
+build/
+.vite/
+
+# IDE
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/*
+!.idea/vcs.xml
+!.idea/modules.xml
+*.iml
+.DS_Store
+
+# Logs
+*.log
+
+# Python (for server later)
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# IMPORTANT: .husky/ directory should NOT be ignored
+# It contains git hooks that need to be committed to the repository
+# Only ignore user-specific IDE files, not the hooks themselves
+
+.idea
+workout-buddy.iml

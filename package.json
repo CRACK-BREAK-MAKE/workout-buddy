@@ -1,0 +1,28 @@
+{
+  "name": "workout-buddy",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI-powered exercise counting app",
+  "scripts": {
+    "prepare": "husky",
+    "dev:client": "cd client && pnpm dev",
+    "build:client": "cd client && pnpm build",
+    "test:client": "cd client && pnpm test:run",
+    "lint:client": "cd client && pnpm lint",
+    "format:client": "cd client && pnpm format",
+    "type-check:client": "cd client && pnpm type-check"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7"
+  },
+  "lint-staged": {
+    "client/**/*.{js,jsx,ts,tsx}": [
+      "pnpm --filter client exec prettier --write",
+      "pnpm --filter client exec eslint --fix --max-warnings 0"
+    ],
+    "client/**/*.{json,css,md}": [
+      "pnpm --filter client exec prettier --write"
+    ]
+  }
+}
