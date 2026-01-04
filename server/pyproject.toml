@@ -1,12 +1,9 @@
-[build-system]
-requires = ["setuptools>=61.0", "wheel"]
-build-backend = "setuptools.build_meta"
-
 [project]
 name = "workout-buddy-api"
 version = "1.0.0"
-description = "AI-powered exercise counter API"
+description = "Enterprise AI-powered exercise counter API"
 requires-python = ">=3.14"
+package = false
 dependencies = [
     "fastapi>=0.128.0",
     "uvicorn[standard]>=0.30.0",
@@ -23,18 +20,20 @@ dependencies = [
     "httpx>=0.28.0",
     "slowapi>=0.1.9",
     "python-json-logger>=3.2.0",
+    "email-validator>=2.3.0",
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
     "pytest>=8.3.0",
     "pytest-asyncio>=0.25.0",
     "pytest-cov>=6.0.0",
-    "httpx>=0.28.0",
-    "ruff>=0.9.0",
+    "ruff>=0.9.1",
     "mypy>=1.14.0",
     "bandit>=1.8.0",
     "pre-commit>=4.5.0",
+    "pip-audit>=2.7.3",
+    "detect-secrets>=1.5.0",
 ]
 
 [tool.ruff]
@@ -42,28 +41,26 @@ line-length = 100
 target-version = "py313"
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "N", "W", "UP", "B", "A"]
-ignore = ["E501"]
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-python_files = "test_*.py"
-asyncio_mode = "auto"
-addopts = "--cov=app --cov-report=html --cov-report=term"
+select = ["E", "F", "I", "N", "W", "UP", "B", "A", "S"]
+ignore = [
+    "E501",
+    "B008", # Support FastAPI dependency injection
+    "S105", # Stop flagging 'TOKEN_URL' as a secret
+    "S106"  # Stop flagging 'token_type="bearer"' as a secret
+]
 
 [tool.mypy]
-python_version = "3.14"
+python_version = "3.13"
 strict = true
-warn_return_any = true
-warn_unused_configs = true
 disallow_untyped_defs = true
-
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["app*"]
-exclude = ["tests*", "alembic*"]
+ignore_missing_imports = true
+disallow_untyped_decorators = false # Essential for FastAPI @app.get()
+mypy_path = "."
 
 [tool.bandit]
 exclude_dirs = [".venv", "tests", "alembic/versions"]
-skips = ["B101"]  # Skip assert_used check (common in tests)
-tests = ["B201", "B301", "B302", "B303", "B304", "B305", "B306", "B307", "B308", "B309", "B310", "B311", "B312", "B313", "B314", "B315", "B316", "B317", "B318", "B319", "B320", "B321", "B322", "B323", "B324", "B401", "B402", "B403", "B404", "B405", "B406", "B407", "B408", "B409", "B410", "B411", "B412", "B413", "B501", "B502", "B503", "B504", "B505", "B506", "B507", "B601", "B602", "B603", "B604", "B605", "B606", "B607", "B608", "B609", "B610", "B611", "B612", "B701", "B702", "B703"]
+skips = ["B101"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"

@@ -1,0 +1,51 @@
+version: '3.8'
+
+name: workout-buddy
+
+services:
+  # PostgreSQL 18 Database
+  postgres:
+    image: postgres:18-alpine
+    container_name: workout-buddy-db
+    environment:
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD: devpass
+      POSTGRES_DB: workout_buddy_dev
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dev -d workout_buddy_dev"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - workout-buddy-network
+
+  # FastAPI Backend
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: workout-buddy-api
+    command: uvicorn app.main:app --host 0.0.0.0 --port 7001 --reload
+    ports:
+      - "7001:7001"
+    volumes:
+      - ./server:/app
+    env_file:
+      - ./server/.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - workout-buddy-network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  workout-buddy-network:
+    driver: bridge

@@ -1,7 +1,7 @@
 # ADR-002: React + Vite for Frontend Framework
 
-**Status:** Accepted  
-**Date:** 2026-01-02  
+**Status:** Accepted
+**Date:** 2026-01-02
 **Decision Makers:** Technical Lead, Frontend Team
 
 ## Context and Problem Statement
