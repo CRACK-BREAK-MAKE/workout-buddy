@@ -5,7 +5,7 @@
  * Receives user after OAuth redirect from backend
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { PageLayout } from '@/shared/components/layout';
@@ -35,7 +35,17 @@ export const AuthCallbackPage = () => {
   const [state, setState] = useState<CallbackState>('processing');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  // Prevent duplicate processing with ref
+  const hasProcessedRef = useRef(false);
+  const redirectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
+    // Prevent duplicate processing (StrictMode, hot reload, etc.)
+    if (hasProcessedRef.current) {
+      return;
+    }
+    hasProcessedRef.current = true;
+
     const processCallback = async () => {
       // Extract token and error from URL query params
       const token = searchParams.get('token');
@@ -62,7 +72,7 @@ export const AuthCallbackPage = () => {
         setState('success');
 
         // Redirect to dashboard after brief success message
-        setTimeout(() => {
+        redirectTimeoutRef.current = setTimeout(() => {
           navigate('/', { replace: true });
         }, 500);
       } catch (err) {
@@ -74,6 +84,13 @@ export const AuthCallbackPage = () => {
     };
 
     processCallback();
+
+    // Cleanup: clear timeout on unmount
+    return () => {
+      if (redirectTimeoutRef.current) {
+        clearTimeout(redirectTimeoutRef.current);
+      }
+    };
   }, [searchParams, navigate, handleCallback]);
 
   const handleRetry = () => {

@@ -59,12 +59,13 @@ export const useAuth = () => {
       setUser(user);
       setAccessToken(token);
 
-      setLoading(false);
       return user;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Authentication failed';
       setError(errorMessage);
       throw err;
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -93,6 +94,8 @@ export const useAuth = () => {
    * and backend updates it with a new one (refresh token rotation).
    */
   const refresh = async (): Promise<void> => {
+    setLoading(true);
+
     try {
       const tokenPair = await authService.refreshAccessToken();
       // Only update access token - refresh token is in httpOnly cookie
@@ -101,6 +104,8 @@ export const useAuth = () => {
       // If refresh fails, clear auth (force re-login)
       clearAuth();
       throw err;
+    } finally {
+      setLoading(false);
     }
   };
 
