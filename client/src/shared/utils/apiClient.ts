@@ -8,7 +8,8 @@
 
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { API_CONFIG } from '@/features/auth/constants/auth.constants';
-import { getAccessToken } from '@/features/auth/utils/tokenStorage';
+import { getAccessToken, removeAccessToken } from '@/features/auth/utils/tokenStorage';
+import { handleTokenRefresh, isRefreshRequest } from '@/features/auth/utils/tokenRefresh';
 import type { ApiError } from '@/features/auth/types/auth.types';
 
 /**
@@ -43,15 +44,46 @@ apiClient.interceptors.request.use(
 );
 
 /**
- * Response interceptor: Handle errors consistently
+ * Response interceptor: Handle errors and automatic token refresh on 401
  */
 apiClient.interceptors.response.use(
   response => {
     return response;
   },
-  (error: AxiosError<ApiError>) => {
+  async (error: AxiosError<ApiError>) => {
+    const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+
+    // Handle 401 Unauthorized - attempt token refresh
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      !isRefreshRequest(originalRequest.url)
+    ) {
+      originalRequest._retry = true;
+
+      try {
+        // Refresh token and get new access token
+        const accessToken = await handleTokenRefresh(apiClient, () => {
+          // On refresh failure: clear auth and redirect to login
+          removeAccessToken();
+          clearAuthToken();
+          window.location.href = '/login';
+        });
+
+        // Update request with new token and retry
+        setAuthToken(accessToken);
+        if (originalRequest.headers) {
+          originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+        }
+
+        return apiClient(originalRequest);
+      } catch (refreshError) {
+        // Refresh failed - error already handled in handleTokenRefresh
+        return Promise.reject(refreshError);
+      }
+    }
+
     // Extract error message from backend response
-    // Always prefer backend's detail field; otherwise use generic error
     const errorMessage = error.response?.data?.detail || 'An unexpected error occurred';
 
     // Create enhanced error with backend message

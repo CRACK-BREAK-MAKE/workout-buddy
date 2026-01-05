@@ -22,6 +22,13 @@ vi.mock('@/shared/utils/logger', () => ({
   },
 }));
 
+// Mock token refresh to prevent auto-refresh in tests
+vi.mock('@/features/auth/utils/tokenRefresh', () => ({
+  handleTokenRefresh: vi.fn(),
+  isRefreshRequest: vi.fn(() => false),
+  refreshAccessToken: vi.fn(),
+}));
+
 describe('authService', () => {
   let mock: MockAdapter;
 
