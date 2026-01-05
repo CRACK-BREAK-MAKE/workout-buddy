@@ -33,6 +33,7 @@ import { isTokenExpired } from '../utils/tokenValidation';
 import { getCurrentUser } from '../services/authService';
 import { setAuthToken } from '@/shared/utils/apiClient';
 import { logger } from '@/shared/utils/logger';
+import { AUTH_MESSAGES } from '../constants/auth.constants';
 
 /**
  * Auth initialization state
@@ -44,14 +45,32 @@ interface AuthInitializationState {
 /**
  * Hook to automatically restore user session on app load
  *
+ * This hook runs once on app mount and:
+ * 1. Checks for existing access token in localStorage
+ * 2. Validates token expiration before trusting it
+ * 3. Fetches user profile if token is valid
+ * 4. Updates auth store with user data
+ * 5. Handles errors gracefully (clear auth, show logged-out state)
+ *
  * @returns {AuthInitializationState} - Object containing isInitializing flag
+ *
+ * @see {@link getAccessToken} - Retrieves token from localStorage with validation
+ * @see {@link isTokenExpired} - Checks JWT expiration before trusting token
+ * @see {@link getCurrentUser} - Fetches user profile from backend
+ * @see {@link useAuthStore} - Zustand store for auth state management
  *
  * @example
  * ```tsx
- * const { isInitializing } = useAuthInitialization();
+ * import { AUTH_MESSAGES } from '@/features/auth/constants/auth.constants';
  *
- * if (isInitializing) {
- *   return <LoadingScreen />;
+ * function App() {
+ *   const { isInitializing } = useAuthInitialization();
+ *
+ *   if (isInitializing) {
+ *     return <LoadingScreen message={AUTH_MESSAGES.SESSION_RESTORING} />;
+ *   }
+ *
+ *   return <Routes>...</Routes>;
  * }
  * ```
  */
@@ -74,7 +93,11 @@ export const useAuthInitialization = (): AuthInitializationState => {
       // Get store functions inside useEffect to satisfy eslint exhaustive-deps
       // Zustand store functions are stable and don't cause re-renders
       const { setUser, setAccessToken, clearAuth } = useAuthStore.getState();
-      // Prevent duplicate initialization (e.g., React StrictMode, multiple instances)
+
+      // Prevent duplicate initialization in React 18+ StrictMode
+      // StrictMode intentionally calls effects twice in development to help detect bugs
+      // This guard ensures we only initialize once per app lifecycle
+      // See: https://react.dev/reference/react/StrictMode#fixing-bugs-found-by-double-rendering-in-development
       if (hasInitialized.current) {
         return;
       }
@@ -85,22 +108,22 @@ export const useAuthInitialization = (): AuthInitializationState => {
         const token = getAccessToken();
 
         if (!token) {
-          logger.debug('No access token found - user not logged in');
+          logger.debug(AUTH_MESSAGES.NO_TOKEN);
           setIsInitializing(false);
           return;
         }
 
-        logger.debug('Access token found, validating expiration');
+        logger.debug(AUTH_MESSAGES.TOKEN_FOUND);
 
         // Step 2: Validate token expiration
         if (isTokenExpired(token)) {
-          logger.debug('Token expired during initialization - clearing auth');
+          logger.debug(AUTH_MESSAGES.TOKEN_EXPIRED_INIT);
           clearAuth();
           setIsInitializing(false);
           return;
         }
 
-        logger.debug('Token valid, attempting session restoration');
+        logger.debug(AUTH_MESSAGES.TOKEN_VALID);
 
         // Step 3: Set token in apiClient for subsequent requests
         setAuthToken(token);
@@ -112,7 +135,7 @@ export const useAuthInitialization = (): AuthInitializationState => {
         setUser(user);
         setAccessToken(token);
 
-        logger.info('Session restored successfully', {
+        logger.info(AUTH_MESSAGES.SESSION_RESTORED, {
           userId: user.id,
           username: user.username,
           email: user.email,
@@ -120,7 +143,7 @@ export const useAuthInitialization = (): AuthInitializationState => {
       } catch (error) {
         // Handle errors gracefully - clear auth and continue
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        logger.error('Session restoration failed', {
+        logger.error(AUTH_MESSAGES.SESSION_FAILED, {
           error: errorMessage,
         });
 

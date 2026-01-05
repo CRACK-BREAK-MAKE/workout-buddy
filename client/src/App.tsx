@@ -10,6 +10,7 @@ import { LoginPage } from './pages/LoginPage';
 import { AuthCallbackPage } from './pages/AuthCallbackPage';
 import { useAuthInitialization } from './features/auth/hooks/useAuthInitialization';
 import { LoadingScreen } from './shared/components/LoadingScreen';
+import { AUTH_MESSAGES } from './features/auth/constants/auth.constants';
 
 function App() {
   // Initialize authentication state from localStorage on app load
@@ -17,7 +18,7 @@ function App() {
 
   // Show loading screen during initialization to prevent flash of wrong content
   if (isInitializing) {
-    return <LoadingScreen message="Restoring session..." />;
+    return <LoadingScreen message={AUTH_MESSAGES.SESSION_RESTORING} />;
   }
 
   // Render routes after initialization completes

@@ -32,8 +32,9 @@ interface LoadingScreenProps {
  * // Default message
  * <LoadingScreen />
  *
- * // Custom message
- * <LoadingScreen message="Restoring session..." />
+ * // Custom message with constant
+ * import { AUTH_MESSAGES } from '@/features/auth/constants/auth.constants';
+ * <LoadingScreen message={AUTH_MESSAGES.SESSION_RESTORING} />
  * ```
  */
 export const LoadingScreen = ({ message = 'Loading...' }: LoadingScreenProps): JSX.Element => {

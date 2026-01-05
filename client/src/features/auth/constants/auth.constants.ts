@@ -50,3 +50,17 @@ export const FRONTEND_URLS = {
   HOME: '/',
   DASHBOARD: '/dashboard',
 } as const;
+
+// Authentication UI and logging messages
+export const AUTH_MESSAGES = {
+  // Loading states
+  SESSION_RESTORING: 'Restoring session...',
+  SESSION_RESTORED: 'Session restored successfully',
+  SESSION_FAILED: 'Session restoration failed',
+
+  // Initialization states
+  NO_TOKEN: 'No access token found - user not logged in',
+  TOKEN_FOUND: 'Access token found, validating expiration',
+  TOKEN_EXPIRED_INIT: 'Token expired during initialization - clearing auth',
+  TOKEN_VALID: 'Token valid, attempting session restoration',
+} as const;
