@@ -10,8 +10,11 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from alembic import context
 from app.core.config.security_settings import security_settings
 
-# Import Base which has all models registered (see app/db/base.py)
-from app.db.base import Base  # This imports Base + all models via base.py
+# Import Base and load models for Alembic auto-detection
+from app.db.base import Base, _import_models_for_alembic
+
+# Import models to register them with Base.metadata
+_import_models_for_alembic()
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

@@ -66,11 +66,14 @@ class UUIDMixin:
 # ============================================================================
 # Model Imports - Register all models for Alembic auto-detection
 # ============================================================================
-# When you create a new model, import it here so Alembic can detect changes
-# Format: from app.features.<feature>.models.<model_name> import <ModelClass>
+# IMPORTANT: These imports are ONLY used by Alembic for auto-detection
+# They must be here at module level but will cause circular imports if
+# done at the top. So we import them conditionally:
 
-from app.features.auth.models.user import User  # noqa: F401, E402
-from app.features.workouts.models.workout import Workout  # noqa: F401, E402
 
-# Add new model imports here:
-# from app.features.exercises.models.exercise import Exercise  # noqa: F401, E402
+def _import_models_for_alembic() -> None:
+    """Import all models for Alembic detection. Called explicitly by alembic/env.py"""
+    from app.features.auth.models.user import User  # noqa: F401
+    from app.features.workouts.models.workout import Workout  # noqa: F401
+    # Add new model imports here:
+    # from app.features.exercises.models.exercise import Exercise  # noqa: F401
