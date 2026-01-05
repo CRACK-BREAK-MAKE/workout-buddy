@@ -2,6 +2,9 @@
 Database Base - SQLAlchemy declarative base
 
 This module provides the declarative base for all database models.
+
+IMPORTANT: Import all models here for Alembic auto-detection!
+When you create a new model, add the import below.
 """
 
 from datetime import UTC, datetime
@@ -58,3 +61,16 @@ class UUIDMixin:
     id: Mapped[uuid4] = mapped_column(  # type: ignore
         UUID(as_uuid=True), primary_key=True, default=uuid4
     )
+
+
+# ============================================================================
+# Model Imports - Register all models for Alembic auto-detection
+# ============================================================================
+# When you create a new model, import it here so Alembic can detect changes
+# Format: from app.features.<feature>.models.<model_name> import <ModelClass>
+
+from app.features.auth.models.user import User  # noqa: F401, E402
+from app.features.workouts.models.workout import Workout  # noqa: F401, E402
+
+# Add new model imports here:
+# from app.features.exercises.models.exercise import Exercise  # noqa: F401, E402

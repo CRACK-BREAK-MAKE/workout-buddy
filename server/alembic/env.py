@@ -9,11 +9,9 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
 from app.core.config.security_settings import security_settings
-from app.db.base import Base
 
-# Import all models here to ensure they're registered with Base.metadata
-from app.features.auth.models.user import User  # noqa: F401
-from app.features.workouts.models.workout import Workout  # noqa: F401
+# Import Base which has all models registered (see app/db/base.py)
+from app.db.base import Base  # This imports Base + all models via base.py
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
