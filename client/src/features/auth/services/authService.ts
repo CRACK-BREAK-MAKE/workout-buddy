@@ -42,6 +42,15 @@ export const handleOAuthCallback = async (accessToken: string): Promise<User> =>
     const response = await apiClient.get<User>(AUTH_ENDPOINTS.OAUTH_ME);
     const user = response.data;
 
+    // Log user data received from Google OAuth
+    logger.info('User data received from OAuth', {
+      userId: user.id,
+      email: user.email,
+      username: user.username,
+      full_name: user.full_name,
+      auth_provider: user.auth_provider,
+    });
+
     // Track successful login
     authTelemetry.loginSuccess('google', user.id);
     logger.info('User logged in successfully', { userId: user.id });

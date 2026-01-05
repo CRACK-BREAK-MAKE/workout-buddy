@@ -12,6 +12,7 @@ import { create } from 'zustand';
 import type { AuthStore, User } from '../types/auth.types';
 import { saveAccessToken, removeAccessToken, getAccessToken } from '../utils/tokenStorage';
 import { setAuthToken, clearAuthToken } from '@/shared/utils/apiClient';
+import { logger } from '@/shared/utils/logger';
 
 /**
  * Initial auth state
@@ -36,6 +37,13 @@ export const useAuthStore = create<AuthStore>(set => ({
    * Set user profile after successful auth
    */
   setUser: (user: User) => {
+    logger.debug('Setting user in auth store', {
+      userId: user.id,
+      username: user.username,
+      full_name: user.full_name,
+      email: user.email,
+    });
+
     set({
       user,
       isAuthenticated: true,

@@ -11,20 +11,21 @@ import type { User } from '../types/auth.types';
 /**
  * Get display name for a user
  *
- * Prioritizes username over full_name, with fallback to 'User'
+ * Prioritizes full_name over username for better user experience.
+ * Falls back to username if full_name is null, then to 'User'.
  *
  * @param user - User object (can be null)
  * @returns Display name string
  *
  * @example
  * ```typescript
- * getDisplayName({ username: 'john_doe', full_name: 'John Doe' }) // => 'john_doe'
- * getDisplayName({ full_name: 'John Doe' }) // => 'John Doe'
+ * getDisplayName({ username: 'john_doe', full_name: 'John Doe' }) // => 'John Doe'
+ * getDisplayName({ username: 'john_doe', full_name: null }) // => 'john_doe'
  * getDisplayName(null) // => 'User'
  * ```
  */
 export const getDisplayName = (user: User | null): string => {
-  return user?.username || user?.full_name || 'User';
+  return user?.full_name || user?.username || 'User';
 };
 
 /**
