@@ -16,7 +16,9 @@ from typing import Any
 from fastapi import Depends, FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.openapi.docs import get_redoc_html, get_swagger_ui_html
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config.base_settings import base_settings
@@ -52,9 +54,13 @@ app = FastAPI(
     version=base_settings.VERSION,
     description="AI-powered exercise counter API with OAuth authentication",
     openapi_url=f"{base_settings.API_V1_PREFIX}/openapi.json",
-    docs_url="/docs",
-    redoc_url="/redoc",
+    docs_url=None,  # Custom docs endpoint defined below
+    redoc_url=None,  # Custom redoc endpoint defined below
+    swagger_ui_parameters={"defaultModelsExpandDepth": -1},  # Hide schemas by default
 )
+
+# Mount static files for custom logo
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 # ============================================================================
 # Middleware
@@ -146,6 +152,32 @@ async def validation_exception_handler(
 ) -> JSONResponse:
     """Handle Pydantic validation errors (different response structure)."""
     return _create_error_response(status.HTTP_422_UNPROCESSABLE_ENTITY, exc.errors())
+
+
+# ============================================================================
+# Custom API Documentation with Logo
+# ============================================================================
+
+
+@app.get("/docs", include_in_schema=False)
+async def custom_swagger_ui() -> Any:
+    """Custom Swagger UI with workout logo."""
+    return get_swagger_ui_html(
+        openapi_url=app.openapi_url or "",
+        title=f"{app.title} - Swagger UI",
+        swagger_favicon_url="/static/logo.svg",
+        swagger_ui_parameters=app.swagger_ui_parameters,
+    )
+
+
+@app.get("/redoc", include_in_schema=False)
+async def custom_redoc() -> Any:
+    """Custom ReDoc with workout logo."""
+    return get_redoc_html(
+        openapi_url=app.openapi_url or "",
+        title=f"{app.title} - ReDoc",
+        redoc_favicon_url="/static/logo.svg",
+    )
 
 
 # ============================================================================

@@ -56,17 +56,22 @@ async def add_security_headers(request: Request, call_next: Any) -> Response:
 
     # Content Security Policy - environment-aware
     if base_settings.ENVIRONMENT == "development":
-        # Development: Allow Swagger UI CDN (cdn.jsdelivr.net)
+        # Development: Allow Swagger UI/ReDoc CDNs
+        # Need to allow:
+        # - cdn.jsdelivr.net for Swagger UI and ReDoc bundles
+        # - fonts.googleapis.com for ReDoc fonts
+        # - blob: for ReDoc workers
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
-            "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+            "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net blob:; "
+            "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; "
             "img-src 'self' data: https:; "
-            "font-src 'self' https://cdn.jsdelivr.net; "
-            "connect-src 'self'"
+            "font-src 'self' https://cdn.jsdelivr.net https://fonts.gstatic.com; "
+            "connect-src 'self' https://cdn.jsdelivr.net; "
+            "worker-src 'self' blob:"
         )
     else:
-        # Production: Strict CSP (no external resources)
+        # Production: Strict CSP (no external resources, no docs in prod)
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; "
             "script-src 'self'; "
