@@ -7,14 +7,14 @@ This module provides HTTP endpoints for:
 - Token refresh
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from fastapi.responses import RedirectResponse
 
 from app.core.config.oauth_settings import oauth_settings
 from app.core.oauth.oauth_factory import OAuthProviderFactory
 from app.core.oauth.oauth_validator import oauth_validator
 from app.features.auth.dependencies import CurrentUser, get_oauth_service, get_token_service
-from app.features.auth.schemas.token_schemas import RefreshTokenRequest, TokenResponse
+from app.features.auth.schemas.token_schemas import TokenResponse
 from app.features.auth.schemas.user_schemas import UserRead
 from app.features.auth.services.oauth_service import OAuthService
 from app.features.auth.services.token_service import TokenService
@@ -137,23 +137,42 @@ async def oauth_callback(
 
 @router.post("/refresh", response_model=TokenResponse)
 async def refresh_access_token(
-    refresh_data: RefreshTokenRequest, token_service: TokenService = Depends(get_token_service)
+    request: Request,
+    response: Response,
+    token_service: TokenService = Depends(get_token_service),
 ) -> TokenResponse:
     """
-    Refresh access token using refresh token.
+    Refresh access token using refresh token from httpOnly cookie.
+
+    Security: Refresh token is automatically sent by browser in httpOnly cookie,
+    providing XSS protection (JavaScript cannot access it).
 
     Args:
-        refresh_data: Refresh token request
+        request: FastAPI request object for reading cookies
         token_service: Token service
 
     Returns:
-        New token pair
+        New token pair with refreshed access_token
 
     Raises:
-        HTTPException: 401 if refresh token invalid
+        HTTPException: 401 if refresh token is missing or invalid
+
+    Example:
+        POST /api/v1/auth/oauth/refresh
+        Cookie: refresh_token=<token>
+        → Returns new access_token + refresh_token in response + updated cookie
     """
+    # Read refresh token from httpOnly cookie (not from request body)
+    refresh_token = request.cookies.get("refresh_token")
+
+    if not refresh_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Refresh token missing. Please log in again.",
+        )
+
     # Validate refresh token and get user ID
-    user_id = token_service.validate_refresh_token(refresh_data.refresh_token)
+    user_id = token_service.validate_refresh_token(refresh_token)
     if user_id is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -163,6 +182,17 @@ async def refresh_access_token(
     # Generate new tokens
     tokens, expires_in = token_service.create_tokens_for_user(user_id)
 
+    # Set new refresh token in httpOnly cookie (automatic rotation)
+    response.set_cookie(
+        key="refresh_token",
+        value=tokens.refresh_token,
+        max_age=7 * 24 * 60 * 60,  # 7 days
+        httponly=True,
+        secure=False,  # TODO: Set to True in production (HTTPS)
+        samesite="lax",
+    )
+
+    # Return new access token in response body
     return TokenResponse(
         access_token=tokens.access_token,
         refresh_token=tokens.refresh_token,

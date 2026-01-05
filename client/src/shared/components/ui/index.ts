@@ -8,3 +8,5 @@ export { Loading } from './Loading';
 export type { LoadingProps } from './Loading';
 
 export { ThemeToggle } from './ThemeToggle';
+
+export { ErrorAlert } from './ErrorAlert';

@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/features/auth/hooks/useAuth';
 import { PageLayout } from '../shared/components/layout';
-import { Card } from '../shared/components/ui';
+import { Card, Loading, ErrorAlert } from '../shared/components/ui';
 import { ExerciseSelector } from '../features/exercises/components/ExerciseSelector';
 import { StatsSummary } from '../features/statistics/components/StatsSummary';
 
@@ -22,28 +23,24 @@ const MOCK_STATS = {
 };
 
 export const HomePage = () => {
-  // Mock auth state - will be replaced with real auth later
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userName] = useState('John');
+  const navigate = useNavigate();
+  const { user, isAuthenticated, isLoading, error, logout, clearError } = useAuth();
 
   const handleSelectExercise = (exerciseId: string) => {
-    console.log('Selected exercise:', exerciseId);
-    // TODO: Navigate to workout page
+    // TODO: Navigate to workout page when implemented
     alert(`Starting ${exerciseId} workout! (Workout page coming soon)`);
   };
 
   const handleLogin = () => {
-    setIsAuthenticated(true);
+    navigate('/login');
   };
 
   const handleLogout = () => {
-    setIsAuthenticated(false);
+    logout();
   };
 
   const handleRegister = () => {
-    console.log('Register clicked');
-    // TODO: Navigate to register page
-    alert('Registration page coming soon!');
+    navigate('/login');
   };
 
   return (
@@ -52,9 +49,27 @@ export const HomePage = () => {
       onLogin={handleLogin}
       onLogout={handleLogout}
       onRegister={handleRegister}
-      userName={userName}
+      userName={user?.username || user?.full_name || 'User'}
     >
-      {isAuthenticated ? (
+      {/* Loading State */}
+      {isLoading && isAuthenticated && (
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center space-y-4">
+            <Loading />
+            <p className="text-neutral-700 dark:text-neutral-300">Loading your dashboard...</p>
+          </div>
+        </div>
+      )}
+
+      {/* Error State */}
+      {error && !isLoading && (
+        <div className="max-w-2xl mx-auto mb-8">
+          <ErrorAlert message={error} onDismiss={clearError} />
+        </div>
+      )}
+
+      {/* Authenticated View */}
+      {!isLoading && isAuthenticated ? (
         /* Authenticated View - Dashboard */
         <div className="space-y-12 animate-fade-in">
           {/* Welcome Section with Gradient */}
@@ -65,7 +80,7 @@ export const HomePage = () => {
             <div className="space-y-4">
               <div className="text-6xl mb-2 animate-bounce-slow">👋</div>
               <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary-700 via-primary-600 to-primary-700 dark:from-primary-400 dark:via-primary-300 dark:to-primary-400 bg-clip-text text-transparent">
-                Welcome back, {userName}!
+                Welcome back, {user?.username || user?.full_name || 'User'}!
               </h1>
               <p className="text-xl text-neutral-700 dark:text-neutral-300 font-medium">
                 Ready to crush your workout today?
