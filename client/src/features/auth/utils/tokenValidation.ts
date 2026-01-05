@@ -10,6 +10,16 @@ import { TOKEN_EXPIRATION } from '../constants/auth.constants';
 import { logger } from '@/shared/utils/logger';
 
 /**
+ * Clock skew tolerance in seconds
+ *
+ * Added to current time when checking token expiration to account for:
+ * - Time differences between client and server
+ * - Network latency
+ * - Slight timing variations in token validation
+ */
+const TOKEN_EXPIRY_BUFFER_SECONDS = 10;
+
+/**
  * Decoded JWT payload (partial - only fields we need)
  */
 interface JWTPayload {
@@ -75,10 +85,9 @@ export const isTokenExpired = (token: string | null): boolean => {
     return true;
   }
 
-  // Check if token is expired (with 10 second buffer for clock skew)
+  // Check if token is expired (with buffer for clock skew)
   const now = Math.floor(Date.now() / 1000);
-  const buffer = 10; // 10 seconds buffer
-  return payload.exp < now + buffer;
+  return payload.exp < now + TOKEN_EXPIRY_BUFFER_SECONDS;
 };
 
 /**

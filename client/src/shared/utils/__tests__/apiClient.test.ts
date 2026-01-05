@@ -10,6 +10,11 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import MockAdapter from 'axios-mock-adapter';
 import { apiClient, setAuthToken, clearAuthToken } from '../apiClient';
 
+// Valid JWT format for testing with expiration far in the future (year 2099)
+// Payload: {"sub":"1234567890","exp":4102444800}
+const VALID_JWT_TOKEN =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiZXhwIjo0MTAyNDQ0ODAwfQ.VzvKe_MbnT6bBz2GU6VPLfM2zKKMdQ1LUUzS3HkxZ_s';
+
 describe('apiClient', () => {
   let mock: MockAdapter;
 
@@ -72,10 +77,10 @@ describe('apiClient', () => {
 
   describe('request interceptor', () => {
     it('should automatically add Authorization header if token exists in localStorage', async () => {
-      localStorage.setItem('workout_buddy_access_token', 'stored-token');
+      localStorage.setItem('workout_buddy_access_token', VALID_JWT_TOKEN);
 
       mock.onGet('/test').reply(config => {
-        expect(config.headers?.Authorization).toBe('Bearer stored-token');
+        expect(config.headers?.Authorization).toBe(`Bearer ${VALID_JWT_TOKEN}`);
         return [200, { success: true }];
       });
 

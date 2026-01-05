@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/features/auth/hooks/useAuth';
+import { getDisplayName } from '@/features/auth/utils/userHelpers';
 import { PageLayout } from '../shared/components/layout';
 import { Card, Loading, ErrorAlert } from '../shared/components/ui';
 import { ExerciseSelector } from '../features/exercises/components/ExerciseSelector';
@@ -49,7 +50,7 @@ export const HomePage = () => {
       onLogin={handleLogin}
       onLogout={handleLogout}
       onRegister={handleRegister}
-      userName={user?.username || user?.full_name || 'User'}
+      userName={getDisplayName(user)}
     >
       {/* Loading State */}
       {isLoading && isAuthenticated && (
@@ -80,7 +81,7 @@ export const HomePage = () => {
             <div className="space-y-4">
               <div className="text-6xl mb-2 animate-bounce-slow">👋</div>
               <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary-700 via-primary-600 to-primary-700 dark:from-primary-400 dark:via-primary-300 dark:to-primary-400 bg-clip-text text-transparent">
-                Welcome back, {user?.username || user?.full_name || 'User'}!
+                Welcome back, {getDisplayName(user)}!
               </h1>
               <p className="text-xl text-neutral-700 dark:text-neutral-300 font-medium">
                 Ready to crush your workout today?
