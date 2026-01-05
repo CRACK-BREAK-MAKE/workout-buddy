@@ -5,6 +5,7 @@
  */
 
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { HomePage } from './pages/HomePage';
 import { LoginPage } from './pages/LoginPage';
 import { AuthCallbackPage } from './pages/AuthCallbackPage';
@@ -13,12 +14,14 @@ import { LoadingScreen } from './shared/components/LoadingScreen';
 import { AUTH_MESSAGES } from './features/auth/constants/auth.constants';
 
 function App() {
+  const { t } = useTranslation('auth');
+
   // Initialize authentication state from localStorage on app load
   const { isInitializing } = useAuthInitialization();
 
   // Show loading screen during initialization to prevent flash of wrong content
   if (isInitializing) {
-    return <LoadingScreen message={AUTH_MESSAGES.SESSION_RESTORING} />;
+    return <LoadingScreen message={t(AUTH_MESSAGES.SESSION_RESTORING)} />;
   }
 
   // Render routes after initialization completes

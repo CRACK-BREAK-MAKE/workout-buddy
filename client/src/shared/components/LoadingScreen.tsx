@@ -9,14 +9,19 @@
  *
  * Usage:
  * ```tsx
- * <LoadingScreen message="Loading your workout data..." />
+ * import { useTranslation } from 'react-i18next';
+ *
+ * const { t } = useTranslation('common');
+ * <LoadingScreen message={t('common.loading')} />
  * ```
  */
+
+import { useTranslation } from 'react-i18next';
 
 interface LoadingScreenProps {
   /**
    * Optional message to display below the spinner
-   * @default "Loading..."
+   * If not provided, uses default translation from common.loading
    */
   message?: string;
 }
@@ -25,25 +30,31 @@ interface LoadingScreenProps {
  * Full-screen loading component with spinner and message
  *
  * @param {LoadingScreenProps} props - Component props
- * @returns {JSX.Element} Full-screen loading UI
+ * @returns Full-screen loading UI
  *
  * @example
  * ```tsx
- * // Default message
+ * import { useTranslation } from 'react-i18next';
+ * import { AUTH_MESSAGES } from '@/features/auth/constants/auth.constants';
+ *
+ * // Default message (uses translation)
  * <LoadingScreen />
  *
- * // Custom message with constant
- * import { AUTH_MESSAGES } from '@/features/auth/constants/auth.constants';
- * <LoadingScreen message={AUTH_MESSAGES.SESSION_RESTORING} />
+ * // Custom translated message
+ * const { t } = useTranslation('auth');
+ * <LoadingScreen message={t(AUTH_MESSAGES.SESSION_RESTORING)} />
  * ```
  */
-export const LoadingScreen = ({ message = 'Loading...' }: LoadingScreenProps): JSX.Element => {
+export const LoadingScreen = ({ message }: LoadingScreenProps) => {
+  const { t } = useTranslation('common');
+  const displayMessage = message || t('common.loading');
+
   return (
     <div
       className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900"
       role="status"
       aria-live="polite"
-      aria-label={message}
+      aria-label={displayMessage}
     >
       <div className="text-center space-y-4">
         {/* Spinning loader */}
@@ -53,7 +64,7 @@ export const LoadingScreen = ({ message = 'Loading...' }: LoadingScreenProps): J
         />
 
         {/* Loading message */}
-        <p className="text-gray-600 dark:text-gray-400 font-medium">{message}</p>
+        <p className="text-gray-600 dark:text-gray-400 font-medium">{displayMessage}</p>
       </div>
     </div>
   );

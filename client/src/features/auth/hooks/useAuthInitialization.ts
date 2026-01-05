@@ -27,6 +27,7 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../store/authStore';
 import { getAccessToken } from '../utils/tokenStorage';
 import { isTokenExpired } from '../utils/tokenValidation';
@@ -77,6 +78,7 @@ interface AuthInitializationState {
 export const useAuthInitialization = (): AuthInitializationState => {
   const [isInitializing, setIsInitializing] = useState(true);
   const hasInitialized = useRef(false);
+  const { t } = useTranslation('auth');
 
   useEffect(() => {
     /**
@@ -108,22 +110,22 @@ export const useAuthInitialization = (): AuthInitializationState => {
         const token = getAccessToken();
 
         if (!token) {
-          logger.debug(AUTH_MESSAGES.NO_TOKEN);
+          logger.debug(t(AUTH_MESSAGES.NO_TOKEN));
           setIsInitializing(false);
           return;
         }
 
-        logger.debug(AUTH_MESSAGES.TOKEN_FOUND);
+        logger.debug(t(AUTH_MESSAGES.TOKEN_FOUND));
 
         // Step 2: Validate token expiration
         if (isTokenExpired(token)) {
-          logger.debug(AUTH_MESSAGES.TOKEN_EXPIRED_INIT);
+          logger.debug(t(AUTH_MESSAGES.TOKEN_EXPIRED_INIT));
           clearAuth();
           setIsInitializing(false);
           return;
         }
 
-        logger.debug(AUTH_MESSAGES.TOKEN_VALID);
+        logger.debug(t(AUTH_MESSAGES.TOKEN_VALID));
 
         // Step 3: Set token in apiClient for subsequent requests
         setAuthToken(token);
@@ -135,7 +137,7 @@ export const useAuthInitialization = (): AuthInitializationState => {
         setUser(user);
         setAccessToken(token);
 
-        logger.info(AUTH_MESSAGES.SESSION_RESTORED, {
+        logger.info(t(AUTH_MESSAGES.SESSION_RESTORED), {
           userId: user.id,
           username: user.username,
           email: user.email,
@@ -143,7 +145,7 @@ export const useAuthInitialization = (): AuthInitializationState => {
       } catch (error) {
         // Handle errors gracefully - clear auth and continue
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        logger.error(AUTH_MESSAGES.SESSION_FAILED, {
+        logger.error(t(AUTH_MESSAGES.SESSION_FAILED), {
           error: errorMessage,
         });
 
@@ -163,7 +165,8 @@ export const useAuthInitialization = (): AuthInitializationState => {
       // In future, could use AbortController to cancel in-flight API requests
       // For now, the finally block ensures state is always cleaned up
     };
-  }, []); // Empty dependency array - run once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty dependency array - run once on mount (t is stable, excluded from deps)
 
   return { isInitializing };
 };

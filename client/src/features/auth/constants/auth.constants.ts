@@ -51,16 +51,21 @@ export const FRONTEND_URLS = {
   DASHBOARD: '/dashboard',
 } as const;
 
-// Authentication UI and logging messages
+/**
+ * Authentication translation keys
+ *
+ * These keys map to translations in locales/[language]/auth.json
+ * Use with useTranslation hook: t('auth.loading.sessionRestoring')
+ */
 export const AUTH_MESSAGES = {
   // Loading states
-  SESSION_RESTORING: 'Restoring session...',
-  SESSION_RESTORED: 'Session restored successfully',
-  SESSION_FAILED: 'Session restoration failed',
+  SESSION_RESTORING: 'auth.loading.sessionRestoring',
+  SESSION_RESTORED: 'auth.loading.sessionRestored',
+  SESSION_FAILED: 'auth.loading.sessionFailed',
 
   // Initialization states
-  NO_TOKEN: 'No access token found - user not logged in',
-  TOKEN_FOUND: 'Access token found, validating expiration',
-  TOKEN_EXPIRED_INIT: 'Token expired during initialization - clearing auth',
-  TOKEN_VALID: 'Token valid, attempting session restoration',
+  NO_TOKEN: 'auth.initialization.noToken',
+  TOKEN_FOUND: 'auth.initialization.tokenFound',
+  TOKEN_EXPIRED_INIT: 'auth.initialization.tokenExpired',
+  TOKEN_VALID: 'auth.initialization.tokenValid',
 } as const;
