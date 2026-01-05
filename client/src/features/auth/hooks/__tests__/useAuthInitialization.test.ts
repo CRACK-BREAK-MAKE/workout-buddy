@@ -104,7 +104,7 @@ describe('useAuthInitialization', () => {
       vi.spyOn(tokenValidation, 'isTokenExpired').mockReturnValue(false);
 
       // Mock successful user profile fetch
-      mockAxios.onGet('/api/v1/auth/oauth/me').reply(200, MOCK_USER);
+      mockAxios.onGet('/auth/oauth/me').reply(200, MOCK_USER);
 
       // Execute
       const { result } = renderHook(() => useAuthInitialization());
@@ -119,7 +119,7 @@ describe('useAuthInitialization', () => {
 
       // Verify user profile fetched
       expect(mockAxios.history.get.length).toBe(1);
-      expect(mockAxios.history.get[0].url).toBe('/api/v1/auth/oauth/me');
+      expect(mockAxios.history.get[0]?.url).toBe('/auth/oauth/me');
 
       // Verify auth store updated
       const authState = useAuthStore.getState();
@@ -140,7 +140,7 @@ describe('useAuthInitialization', () => {
       vi.spyOn(tokenValidation, 'isTokenExpired').mockReturnValue(false);
 
       // Mock successful user profile fetch
-      mockAxios.onGet('/api/v1/auth/oauth/me').reply(200, MOCK_USER);
+      mockAxios.onGet('/auth/oauth/me').reply(200, MOCK_USER);
 
       // Execute
       renderHook(() => useAuthInitialization());
@@ -151,7 +151,7 @@ describe('useAuthInitialization', () => {
       });
 
       // Verify token set in request headers
-      const authHeader = mockAxios.history.get[0].headers?.Authorization;
+      const authHeader = mockAxios.history.get[0]?.headers?.Authorization;
       expect(authHeader).toBe(`Bearer ${VALID_TOKEN}`);
     });
   });
@@ -220,7 +220,7 @@ describe('useAuthInitialization', () => {
       vi.spyOn(tokenValidation, 'shouldRefreshToken').mockReturnValue(true);
 
       // Mock successful user fetch
-      mockAxios.onGet('/api/v1/auth/oauth/me').reply(200, MOCK_USER);
+      mockAxios.onGet('/auth/oauth/me').reply(200, MOCK_USER);
 
       // Execute
       const { result } = renderHook(() => useAuthInitialization());
@@ -250,7 +250,7 @@ describe('useAuthInitialization', () => {
       vi.spyOn(tokenValidation, 'isTokenExpired').mockReturnValue(false);
 
       // Mock 401 response
-      mockAxios.onGet('/api/v1/auth/oauth/me').reply(401, { detail: 'Unauthorized' });
+      mockAxios.onGet('/auth/oauth/me').reply(401, { detail: 'Unauthorized' });
 
       const clearAuthSpy = vi.spyOn(useAuthStore.getState(), 'clearAuth');
 
@@ -285,7 +285,7 @@ describe('useAuthInitialization', () => {
       vi.spyOn(tokenValidation, 'isTokenExpired').mockReturnValue(false);
 
       // Mock 500 response
-      mockAxios.onGet('/api/v1/auth/oauth/me').reply(500, { detail: 'Internal Server Error' });
+      mockAxios.onGet('/auth/oauth/me').reply(500, { detail: 'Internal Server Error' });
 
       const clearAuthSpy = vi.spyOn(useAuthStore.getState(), 'clearAuth');
 
@@ -310,17 +310,20 @@ describe('useAuthInitialization', () => {
       vi.spyOn(tokenValidation, 'isTokenExpired').mockReturnValue(false);
 
       // Mock network error (no response)
-      mockAxios.onGet('/api/v1/auth/oauth/me').networkError();
+      mockAxios.onGet('/auth/oauth/me').networkError();
 
       const clearAuthSpy = vi.spyOn(useAuthStore.getState(), 'clearAuth');
 
       // Execute
       const { result } = renderHook(() => useAuthInitialization());
 
-      // Wait for completion
-      await waitFor(() => {
-        expect(result.current.isInitializing).toBe(false);
-      });
+      // Wait for completion (longer timeout for network retries - apiClient has 2 retries)
+      await waitFor(
+        () => {
+          expect(result.current.isInitializing).toBe(false);
+        },
+        { timeout: 5000 }
+      );
 
       // Verify auth cleared
       expect(clearAuthSpy).toHaveBeenCalled();
@@ -336,7 +339,7 @@ describe('useAuthInitialization', () => {
 
       // Mock response with missing required fields
       const invalidUser = { email: 'test@example.com' }; // Missing id, username, etc.
-      mockAxios.onGet('/api/v1/auth/oauth/me').reply(200, invalidUser);
+      mockAxios.onGet('/auth/oauth/me').reply(200, invalidUser);
 
       const clearAuthSpy = vi.spyOn(useAuthStore.getState(), 'clearAuth');
 
@@ -363,7 +366,7 @@ describe('useAuthInitialization', () => {
       vi.spyOn(tokenValidation, 'isTokenExpired').mockReturnValue(false);
 
       // Mock slow response (1 second delay)
-      mockAxios.onGet('/api/v1/auth/oauth/me').reply(() => {
+      mockAxios.onGet('/auth/oauth/me').reply(() => {
         return new Promise(resolve => {
           setTimeout(() => resolve([200, MOCK_USER]), 1000);
         });
@@ -393,7 +396,7 @@ describe('useAuthInitialization', () => {
       vi.spyOn(tokenStorage, 'getAccessToken').mockReturnValue(VALID_TOKEN);
       vi.spyOn(tokenValidation, 'isTokenExpired').mockReturnValue(false);
 
-      mockAxios.onGet('/api/v1/auth/oauth/me').reply(200, MOCK_USER);
+      mockAxios.onGet('/auth/oauth/me').reply(200, MOCK_USER);
 
       // Execute
       const { result } = renderHook(() => useAuthInitialization());
@@ -412,7 +415,7 @@ describe('useAuthInitialization', () => {
       vi.spyOn(tokenStorage, 'getAccessToken').mockReturnValue(VALID_TOKEN);
       vi.spyOn(tokenValidation, 'isTokenExpired').mockReturnValue(false);
 
-      mockAxios.onGet('/api/v1/auth/oauth/me').reply(401);
+      mockAxios.onGet('/auth/oauth/me').reply(401);
 
       // Execute
       const { result } = renderHook(() => useAuthInitialization());
@@ -439,7 +442,7 @@ describe('useAuthInitialization', () => {
       vi.spyOn(tokenStorage, 'getAccessToken').mockReturnValue(VALID_TOKEN);
       vi.spyOn(tokenValidation, 'isTokenExpired').mockReturnValue(false);
 
-      mockAxios.onGet('/api/v1/auth/oauth/me').reply(200, MOCK_USER);
+      mockAxios.onGet('/auth/oauth/me').reply(200, MOCK_USER);
 
       // Execute: Call hook twice (simulating React StrictMode)
       const { result: result1 } = renderHook(() => useAuthInitialization());
@@ -464,7 +467,7 @@ describe('useAuthInitialization', () => {
       vi.spyOn(tokenValidation, 'isTokenExpired').mockReturnValue(false);
 
       // Mock slow response
-      mockAxios.onGet('/api/v1/auth/oauth/me').reply(() => {
+      mockAxios.onGet('/auth/oauth/me').reply(() => {
         return new Promise(resolve => {
           setTimeout(() => resolve([200, MOCK_USER]), 2000);
         });
@@ -491,7 +494,7 @@ describe('useAuthInitialization', () => {
 
       // Mock 401 on first call, success on retry (after refresh)
       let callCount = 0;
-      mockAxios.onGet('/api/v1/auth/oauth/me').reply(() => {
+      mockAxios.onGet('/auth/oauth/me').reply(() => {
         callCount++;
         if (callCount === 1) {
           return [401, { detail: 'Unauthorized' }];
@@ -534,7 +537,7 @@ describe('useAuthInitialization', () => {
       vi.spyOn(tokenStorage, 'getAccessToken').mockReturnValue(VALID_TOKEN);
       vi.spyOn(tokenValidation, 'isTokenExpired').mockReturnValue(false);
 
-      mockAxios.onGet('/api/v1/auth/oauth/me').reply(200, MOCK_USER);
+      mockAxios.onGet('/auth/oauth/me').reply(200, MOCK_USER);
 
       const setUserSpy = vi.spyOn(useAuthStore.getState(), 'setUser');
 
@@ -555,7 +558,7 @@ describe('useAuthInitialization', () => {
       vi.spyOn(tokenStorage, 'getAccessToken').mockReturnValue(VALID_TOKEN);
       vi.spyOn(tokenValidation, 'isTokenExpired').mockReturnValue(false);
 
-      mockAxios.onGet('/api/v1/auth/oauth/me').reply(200, MOCK_USER);
+      mockAxios.onGet('/auth/oauth/me').reply(200, MOCK_USER);
 
       const setAccessTokenSpy = vi.spyOn(useAuthStore.getState(), 'setAccessToken');
 
@@ -589,18 +592,21 @@ describe('useAuthInitialization', () => {
         vi.spyOn(tokenValidation, 'isTokenExpired').mockReturnValue(false);
 
         if (scenario.networkError) {
-          mockAxios.onGet('/api/v1/auth/oauth/me').networkError();
+          mockAxios.onGet('/auth/oauth/me').networkError();
         } else if (scenario.response) {
-          mockAxios.onGet('/api/v1/auth/oauth/me').reply(...scenario.response);
+          mockAxios.onGet('/auth/oauth/me').reply(...scenario.response);
         }
 
         // Execute
         const { result } = renderHook(() => useAuthInitialization());
 
-        // Wait for completion
-        await waitFor(() => {
-          expect(result.current.isInitializing).toBe(false);
-        });
+        // Wait for completion (longer timeout for network retries - apiClient has 2 retries)
+        await waitFor(
+          () => {
+            expect(result.current.isInitializing).toBe(false);
+          },
+          { timeout: 5000 }
+        );
 
         // Verify clearAuth was called (check store state)
         const authState = useAuthStore.getState();
@@ -615,24 +621,29 @@ describe('useAuthInitialization', () => {
    */
   describe('Logging', () => {
     it('should log restoration attempt', async () => {
+      // Reset axios history to avoid pollution from previous tests
+      mockAxios.resetHistory();
+
       // Setup: Valid token
       vi.spyOn(tokenStorage, 'getAccessToken').mockReturnValue(VALID_TOKEN);
       vi.spyOn(tokenValidation, 'isTokenExpired').mockReturnValue(false);
 
-      mockAxios.onGet('/api/v1/auth/oauth/me').reply(200, MOCK_USER);
+      mockAxios.onGet('/auth/oauth/me').reply(200, MOCK_USER);
 
       // Execute
       renderHook(() => useAuthInitialization());
 
       // Wait for completion
       await waitFor(() => {
-        expect(mockAxios.history.get.length).toBe(1);
+        expect(mockAxios.history.get.length).toBeGreaterThanOrEqual(1);
       });
 
       // Verify attempt logged (either debug or info level)
+      const debugCalls = (logger.debug as ReturnType<typeof vi.fn>).mock.calls;
+      const infoCalls = (logger.info as ReturnType<typeof vi.fn>).mock.calls;
       const logCalled =
-        logger.debug.mock.calls.some(call => call[0]?.includes('restor')) ||
-        logger.info.mock.calls.some(call => call[0]?.includes('restor'));
+        debugCalls.some((call: string[]) => call[0]?.includes('restor')) ||
+        infoCalls.some((call: string[]) => call[0]?.includes('restor'));
 
       expect(logCalled).toBe(true);
     });
@@ -642,7 +653,7 @@ describe('useAuthInitialization', () => {
       vi.spyOn(tokenStorage, 'getAccessToken').mockReturnValue(VALID_TOKEN);
       vi.spyOn(tokenValidation, 'isTokenExpired').mockReturnValue(false);
 
-      mockAxios.onGet('/api/v1/auth/oauth/me').reply(200, MOCK_USER);
+      mockAxios.onGet('/auth/oauth/me').reply(200, MOCK_USER);
 
       // Execute
       renderHook(() => useAuthInitialization());
@@ -668,12 +679,11 @@ describe('useAuthInitialization', () => {
         },
         {
           name: '401 error',
-          setup: () =>
-            mockAxios.onGet('/api/v1/auth/oauth/me').reply(401, { detail: 'Unauthorized' }),
+          setup: () => mockAxios.onGet('/auth/oauth/me').reply(401, { detail: 'Unauthorized' }),
         },
         {
           name: 'network error',
-          setup: () => mockAxios.onGet('/api/v1/auth/oauth/me').networkError(),
+          setup: () => mockAxios.onGet('/auth/oauth/me').networkError(),
         },
       ];
 
@@ -694,10 +704,12 @@ describe('useAuthInitialization', () => {
         });
 
         // Verify error logged (debug, error, or warn level)
+        const errorCalls = (logger.error as ReturnType<typeof vi.fn>).mock.calls;
+        const debugCalls = (logger.debug as ReturnType<typeof vi.fn>).mock.calls;
         const errorLogged =
-          logger.error.mock.calls.length > 0 ||
-          logger.debug.mock.calls.some(
-            call => call[0]?.includes('fail') || call[0]?.includes('expired')
+          errorCalls.length > 0 ||
+          debugCalls.some(
+            (call: string[]) => call[0]?.includes('fail') || call[0]?.includes('expired')
           );
 
         expect(errorLogged).toBe(true);
