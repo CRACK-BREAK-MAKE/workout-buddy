@@ -1,22 +1,32 @@
 """
 FastAPI Application - Main entry point
 
-This module initializes the FastAPI application with:
-- CORS middleware
-- API routes
-- Exception handlers
-- Health check endpoints
+This module is ONLY responsible for application initialization:
+- Create FastAPI app
+- Register middleware
+- Register routes
+- Configure exception handlers
+- Define health check endpoints
+
+All business logic is in separate modules following SRP.
 """
 
 from typing import Any
 
-from fastapi import FastAPI, Request, status
+from fastapi import Depends, FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config.base_settings import base_settings
 from app.core.config.security_settings import security_settings
+from app.core.health.checks import get_comprehensive_health
+from app.core.logging.config import get_logger, setup_logging
+from app.core.middleware.error_handler import handle_errors
+from app.core.middleware.request_logging import log_requests
+from app.core.middleware.security import add_security_headers
+from app.db.session import get_db
 from app.features.auth.exceptions import (
     AuthError,
     InactiveUserError,
@@ -28,6 +38,10 @@ from app.features.auth.exceptions import (
 from app.features.auth.routes import oauth_routes
 from app.features.statistics.routes import statistics_routes
 from app.features.workouts.routes import workout_routes
+
+# Setup logging
+setup_logging()
+logger = get_logger(__name__)
 
 # ============================================================================
 # FastAPI Application
@@ -55,80 +69,83 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 # ============================================================================
-# Exception Handlers
+# Custom Middleware - Register imported middleware functions (SRP)
+# ============================================================================
+
+# Security headers middleware
+app.middleware("http")(add_security_headers)
+
+# Request/response logging middleware
+app.middleware("http")(log_requests)
+
+# Global error handler middleware
+app.middleware("http")(handle_errors)
+
+# ============================================================================
+# Exception Handlers - DRY: Centralized error response factory
 # ============================================================================
 
 
-@app.exception_handler(UserNotFoundError)
-async def user_not_found_handler(request: Request, exc: UserNotFoundError) -> JSONResponse:
-    """Handle UserNotFoundError exceptions."""
-    return JSONResponse(
-        status_code=status.HTTP_404_NOT_FOUND,
-        content={"detail": str(exc)},
-    )
-
-
-@app.exception_handler(UserAlreadyExistsError)
-async def user_already_exists_handler(
-    request: Request, exc: UserAlreadyExistsError
+def _create_error_response(
+    status_code: int,
+    detail: str | list[dict[str, Any]],
+    headers: dict[str, str] | None = None,
 ) -> JSONResponse:
-    """Handle UserAlreadyExistsError exceptions."""
+    """
+    Factory for creating standardized error responses (DRY principle).
+
+    Args:
+        status_code: HTTP status code
+        detail: Error detail message or validation errors
+        headers: Optional HTTP headers
+
+    Returns:
+        Standardized JSON error response
+    """
     return JSONResponse(
-        status_code=status.HTTP_409_CONFLICT,
-        content={"detail": str(exc)},
+        status_code=status_code,
+        content={"detail": detail},
+        headers=headers,
     )
 
 
-@app.exception_handler(InvalidCredentialsError)
-async def invalid_credentials_handler(
-    request: Request, exc: InvalidCredentialsError
-) -> JSONResponse:
-    """Handle InvalidCredentialsError exceptions."""
-    return JSONResponse(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        content={"detail": str(exc)},
-        headers={"WWW-Authenticate": "Bearer"},
-    )
+# Exception handler registry - maps exception types to (status_code, headers)
+_AUTH_HEADER = {"WWW-Authenticate": "Bearer"}
+
+_EXCEPTION_REGISTRY: dict[type[Exception], tuple[int, dict[str, str] | None]] = {
+    UserNotFoundError: (status.HTTP_404_NOT_FOUND, None),
+    UserAlreadyExistsError: (status.HTTP_409_CONFLICT, None),
+    InvalidCredentialsError: (status.HTTP_401_UNAUTHORIZED, _AUTH_HEADER),
+    InvalidTokenError: (status.HTTP_401_UNAUTHORIZED, _AUTH_HEADER),
+    InactiveUserError: (status.HTTP_403_FORBIDDEN, None),
+    AuthError: (status.HTTP_400_BAD_REQUEST, None),
+}
 
 
-@app.exception_handler(InvalidTokenError)
-async def invalid_token_handler(request: Request, exc: InvalidTokenError) -> JSONResponse:
-    """Handle InvalidTokenError exceptions."""
-    return JSONResponse(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        content={"detail": str(exc)},
-        headers={"WWW-Authenticate": "Bearer"},
-    )
+# Register exception handlers using registry pattern
+for exc_class, (status_code, headers) in _EXCEPTION_REGISTRY.items():
 
+    def _make_handler(
+        status_code: int = status_code, headers: dict[str, str] | None = headers
+    ) -> Any:
+        """Closure to capture status_code and headers for each exception type."""
 
-@app.exception_handler(InactiveUserError)
-async def inactive_user_handler(request: Request, exc: InactiveUserError) -> JSONResponse:
-    """Handle InactiveUserError exceptions."""
-    return JSONResponse(
-        status_code=status.HTTP_403_FORBIDDEN,
-        content={"detail": str(exc)},
-    )
+        async def handler(_request: Request, exc: Exception) -> JSONResponse:
+            return _create_error_response(status_code, str(exc), headers)
 
+        return handler
 
-@app.exception_handler(AuthError)
-async def auth_error_handler(request: Request, exc: AuthError) -> JSONResponse:
-    """Handle generic AuthError exceptions."""
-    return JSONResponse(
-        status_code=status.HTTP_400_BAD_REQUEST,
-        content={"detail": str(exc)},
-    )
+    app.exception_handler(exc_class)(_make_handler())
 
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(
-    request: Request, exc: RequestValidationError
+    _request: Request, exc: RequestValidationError
 ) -> JSONResponse:
-    """Handle Pydantic validation errors."""
-    return JSONResponse(
-        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        content={"detail": exc.errors()},
-    )
+    """Handle Pydantic validation errors (different response structure)."""
+    return _create_error_response(status.HTTP_422_UNPROCESSABLE_ENTITY, exc.errors())
 
 
 # ============================================================================
@@ -140,15 +157,38 @@ async def validation_exception_handler(
 @app.get("/health", tags=["Health"])
 async def health_check() -> dict[str, Any]:
     """
-    Public health check endpoint.
+    Basic health check endpoint.
 
     Returns:
-        Health status and version
+        Simple health status and version
     """
     return {
         "status": "healthy",
         "version": base_settings.VERSION,
         "environment": base_settings.ENVIRONMENT,
+    }
+
+
+# Detailed health check (public, no auth)
+@app.get("/health/detailed", tags=["Health"])
+async def detailed_health_check(db: AsyncSession = Depends(get_db)) -> dict[str, Any]:
+    """
+    Detailed health check endpoint with component status.
+
+    Checks:
+    - Database connectivity
+    - OAuth provider availability
+    - Overall system health
+
+    Returns:
+        Comprehensive health status of all components
+    """
+    health_status = await get_comprehensive_health(db)
+
+    return {
+        "version": base_settings.VERSION,
+        "environment": base_settings.ENVIRONMENT,
+        **health_status,
     }
 
 
@@ -173,12 +213,28 @@ app.include_router(
 @app.on_event("startup")
 async def startup_event() -> None:
     """Run on application startup."""
-    print(f"🚀 {base_settings.APP_NAME} v{base_settings.VERSION} starting...")
-    print("📝 API Documentation: http://localhost:7001/docs")
-    print(f"🔐 Environment: {base_settings.ENVIRONMENT}")
+    # Main startup message
+    logger.info(
+        f"🚀 {base_settings.APP_NAME} v{base_settings.VERSION} starting",
+        extra={
+            "app_name": base_settings.APP_NAME,
+            "version": base_settings.VERSION,
+            "environment": base_settings.ENVIRONMENT,
+        },
+    )
+
+    # Environment info
+    logger.info(f"📍 Environment: {base_settings.ENVIRONMENT.upper()}")
+
+    # Documentation URLs (helpful for developers)
+    logger.info(f"📚 API Docs: http://localhost:7001{app.docs_url}")
+    logger.info(f"📖 ReDoc: http://localhost:7001{app.redoc_url}")
+    logger.info(
+        "🏥 Health Check: http://localhost:7001/health/detailed (includes DB + OAuth status)"
+    )
 
 
 @app.on_event("shutdown")
 async def shutdown_event() -> None:
     """Run on application shutdown."""
-    print(f"👋 {base_settings.APP_NAME} shutting down...")
+    logger.info(f"{base_settings.APP_NAME} shutting down")
