@@ -17,7 +17,7 @@ export const Card = ({
   const baseStyles =
     'bg-white/70 backdrop-blur-xl rounded-xl shadow-md border border-white/50 shadow-neutral-200/30 dark:bg-white/5 dark:backdrop-blur-2xl dark:border-white/10 dark:shadow-black/20';
   const hoverStyles = hover
-    ? 'hover:shadow-lg hover:bg-white/80 hover:border-primary-200 dark:hover:bg-white/10 dark:hover:border-primary-500 transition-all cursor-pointer'
+    ? 'hover:shadow-lg hover:bg-white/80 hover:border-primary-200 hover:scale-105 dark:hover:bg-white/10 dark:hover:border-primary-500 transition-all duration-200 cursor-pointer'
     : '';
 
   const paddingStyles = {

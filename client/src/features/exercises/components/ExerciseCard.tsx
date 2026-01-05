@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Card } from '../../../shared/components/ui';
 import { ExerciseInfo } from '../constants/exerciseTypes';
 
@@ -7,6 +8,11 @@ export interface ExerciseCardProps {
 }
 
 export const ExerciseCard = ({ exercise, onSelect }: ExerciseCardProps) => {
+  const { t } = useTranslation('exercises');
+
+  // Map exercise IDs to translation keys
+  const exerciseKey = exercise.id === 'push-up' ? 'pushup' : 'jumprope';
+
   return (
     <Card
       hover
@@ -18,7 +24,9 @@ export const ExerciseCard = ({ exercise, onSelect }: ExerciseCardProps) => {
       <div className="text-6xl">{exercise.icon}</div>
 
       {/* Name */}
-      <h3 className="text-2xl font-bold text-neutral-900 dark:text-neutral-50">{exercise.name}</h3>
+      <h3 className="text-2xl font-bold text-neutral-900 dark:text-neutral-50">
+        {t(`exercises.${exerciseKey}.name`)}
+      </h3>
 
       {/* Difficulty Badge */}
       <span
@@ -30,20 +38,22 @@ export const ExerciseCard = ({ exercise, onSelect }: ExerciseCardProps) => {
               : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
         }`}
       >
-        {exercise.difficulty}
+        {t(`exercises.${exerciseKey}.difficulty`)}
       </span>
 
       {/* Description */}
-      <p className="text-neutral-700 dark:text-neutral-300">{exercise.description}</p>
+      <p className="text-neutral-700 dark:text-neutral-300">
+        {t(`exercises.${exerciseKey}.description`)}
+      </p>
 
       {/* Target Muscles */}
       <div className="flex flex-wrap gap-2 justify-center">
-        {exercise.targetMuscles.map(muscle => (
+        {exercise.targetMuscles.map((muscle, index) => (
           <span
             key={muscle}
             className="px-2 py-1 bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 text-xs rounded-md font-medium"
           >
-            {muscle}
+            {t(`exercises.${exerciseKey}.muscles.${index}`)}
           </span>
         ))}
       </div>

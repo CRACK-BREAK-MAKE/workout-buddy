@@ -1,0 +1,28 @@
+{
+  "exercises": {
+    "selector": {
+      "title": "Choose Your Exercise",
+      "subtitle": "Select an exercise to start your workout"
+    },
+    "pushup": {
+      "name": "Push-ups",
+      "description": "Classic upper body exercise. AI tracks your elbow angle for perfect form.",
+      "difficulty": "Medium",
+      "muscles": {
+        "0": "Chest",
+        "1": "Triceps",
+        "2": "Shoulders"
+      }
+    },
+    "jumprope": {
+      "name": "Jump Rope",
+      "description": "Cardio workout that burns calories. AI counts your jumps automatically.",
+      "difficulty": "Easy",
+      "muscles": {
+        "0": "Calves",
+        "1": "Cardio",
+        "2": "Coordination"
+      }
+    }
+  }
+}

@@ -1,7 +1,39 @@
+/**
+ * App Component
+ *
+ * Main application component with routing configuration and session restoration
+ */
+
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { HomePage } from './pages/HomePage';
+import { LoginPage } from './pages/LoginPage';
+import { AuthCallbackPage } from './pages/AuthCallbackPage';
+import { useAuthInitialization } from './features/auth/hooks/useAuthInitialization';
+import { LoadingScreen } from './shared/components/LoadingScreen';
+import { AUTH_MESSAGES } from './features/auth/constants/auth.constants';
 
 function App() {
-  return <HomePage />;
+  const { t } = useTranslation('auth');
+
+  // Initialize authentication state from localStorage on app load
+  const { isInitializing } = useAuthInitialization();
+
+  // Show loading screen during initialization to prevent flash of wrong content
+  if (isInitializing) {
+    return <LoadingScreen message={t(AUTH_MESSAGES.SESSION_RESTORING)} />;
+  }
+
+  // Render routes after initialization completes
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/auth/callback" element={<AuthCallbackPage />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
 export default App;

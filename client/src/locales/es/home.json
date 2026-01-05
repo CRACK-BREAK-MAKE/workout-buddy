@@ -1,0 +1,64 @@
+{
+  "home": {
+    "hero": {
+      "title": "Tu Compañero de",
+      "subtitle": "Entrenamiento con IA",
+      "description1": "Cuenta tus repeticiones automáticamente con",
+      "computerVision": "visión por computadora",
+      "description2": "Sin dispositivos. Sin seguimiento manual. Solo tú y tu entrenamiento.",
+      "getStarted": "Comenzar Gratis",
+      "tryDemo": "Probar Demo"
+    },
+    "socialProof": {
+      "accuracy": "95%+ Precisión",
+      "privacy": "Privacidad Primero",
+      "realtime": "Tiempo Real"
+    },
+    "features": {
+      "title": "¿Por Qué Elegir Workout Buddy?",
+      "subtitle": "Tecnología de vanguardia con simplicidad",
+      "aiPowered": {
+        "title": "Con IA",
+        "description1": "Detección de pose MediaPipe cuenta tus repeticiones con",
+        "accuracy": "95%+ precisión",
+        "badge": "Seguimiento en tiempo real"
+      },
+      "privacy": {
+        "title": "Privacidad Primero",
+        "description1": "Todo el procesamiento ocurre en tu navegador.",
+        "videoNeverLeaves": "Tu video nunca sale",
+        "description2": "de tu dispositivo.",
+        "badge": "100% Seguro"
+      },
+      "tracking": {
+        "title": "Seguir Progreso",
+        "description1": "Monitorea tus mejoras con",
+        "detailedStats": "estadísticas detalladas",
+        "description2": "y récords personales",
+        "badge": "Panel de análisis"
+      }
+    },
+    "exercises": {
+      "title": "Ejercicios Soportados",
+      "subtitle": "Comienza con flexiones y saltar la cuerda. ¡Más ejercicios próximamente!",
+      "pushups": "Flexiones",
+      "jumprope": "Saltar Cuerda",
+      "comingSoon": "🚀 ¡Más ejercicios próximamente!"
+    },
+    "cta": {
+      "title": "¿Listo Para Empezar?",
+      "subtitle": "Únete a miles de usuarios rastreando sus entrenamientos con IA",
+      "button": "Crear Cuenta Gratis",
+      "note": "✨ Sin tarjeta de crédito • Comienza en 30 segundos"
+    },
+    "dashboard": {
+      "welcomeBack": "¡Bienvenido de nuevo, {{name}}!",
+      "readyToWorkout": "¿Listo para triunfar en tu entrenamiento hoy?",
+      "yourProgress": "Tu Progreso",
+      "last30Days": "Últimos 30 días",
+      "startWorkout": "Comienza Tu Entrenamiento",
+      "chooseExercise": "Elige un ejercicio y deja que la IA cuente tus repeticiones",
+      "loading": "Cargando tu panel..."
+    }
+  }
+}

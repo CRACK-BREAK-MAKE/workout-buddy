@@ -1,0 +1,16 @@
+{
+  "common": {
+    "loading": "Cargando...",
+    "login": "Iniciar Sesión",
+    "logout": "Cerrar Sesión",
+    "register": "Comenzar",
+    "welcome": "¡Bienvenido, {{name}}!",
+    "footer": {
+      "copyright": "© {{year}} Workout Buddy. Todos los derechos reservados.",
+      "about": "Acerca de",
+      "privacy": "Privacidad",
+      "terms": "Términos",
+      "github": "GitHub"
+    }
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "home": {
+    "hero": {
+      "title": "Your AI-Powered",
+      "subtitle": "Workout Companion",
+      "description1": "Count your reps automatically with",
+      "computerVision": "computer vision",
+      "description2": "No wearables. No manual tracking. Just you and your workout.",
+      "getStarted": "Get Started Free",
+      "tryDemo": "Try Demo"
+    },
+    "socialProof": {
+      "accuracy": "95%+ Accuracy",
+      "privacy": "Privacy First",
+      "realtime": "Real-time"
+    },
+    "features": {
+      "title": "Why Choose Workout Buddy?",
+      "subtitle": "Cutting-edge technology meets simplicity",
+      "aiPowered": {
+        "title": "AI-Powered",
+        "description1": "MediaPipe pose detection counts your reps with",
+        "accuracy": "95%+ accuracy",
+        "badge": "Real-time tracking"
+      },
+      "privacy": {
+        "title": "Privacy First",
+        "description1": "All processing happens in your browser.",
+        "videoNeverLeaves": "Your video never leaves",
+        "description2": "your device.",
+        "badge": "100% Secure"
+      },
+      "tracking": {
+        "title": "Track Progress",
+        "description1": "Monitor your improvements with",
+        "detailedStats": "detailed statistics",
+        "description2": "and personal records",
+        "badge": "Analytics dashboard"
+      }
+    },
+    "exercises": {
+      "title": "Supported Exercises",
+      "subtitle": "Start with push-ups and jump rope. More exercises coming soon!",
+      "pushups": "Push-ups",
+      "jumprope": "Jump Rope",
+      "comingSoon": "🚀 More exercises coming soon!"
+    },
+    "cta": {
+      "title": "Ready to Get Started?",
+      "subtitle": "Join thousands of users tracking their workouts with AI",
+      "button": "Create Free Account",
+      "note": "✨ No credit card required • Start in 30 seconds"
+    },
+    "dashboard": {
+      "welcomeBack": "Welcome back, {{name}}!",
+      "readyToWorkout": "Ready to crush your workout today?",
+      "yourProgress": "Your Progress",
+      "last30Days": "Last 30 days",
+      "startWorkout": "Start Your Workout",
+      "chooseExercise": "Choose an exercise and let AI count your reps",
+      "loading": "Loading your dashboard..."
+    }
+  }
+}

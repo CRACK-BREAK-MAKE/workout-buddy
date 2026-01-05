@@ -1,0 +1,21 @@
+{
+  "statistics": {
+    "totalWorkouts": "कुल वर्कआउट",
+    "totalReps": "कुल रेप्स",
+    "totalDuration": "कुल अवधि",
+    "caloriesBurned": "कैलोरी बर्न",
+    "timeExercising": "व्यायाम समय",
+    "averageReps": "औसत रेप्स/वर्कआउट",
+    "avgPerWorkout": "औसत {{count}} प्रति वर्कआउट",
+    "personalRecords": "व्यक्तिगत रिकॉर्ड",
+    "allTime": "सभी समय",
+    "totalBurned": "कुल बर्न",
+    "mostInSession": "एक सत्र में सबसे अधिक",
+    "pushups": "पुश-अप्स",
+    "jumprope": "रस्सी कूद",
+    "workouts": "वर्कआउट",
+    "reps": "रेप्स",
+    "minutes": "मिनट",
+    "calories": "कैलोरी"
+  }
+}

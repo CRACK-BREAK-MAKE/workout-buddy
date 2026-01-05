@@ -1,0 +1,21 @@
+{
+  "statistics": {
+    "totalWorkouts": "Total Workouts",
+    "totalReps": "Total Reps",
+    "totalDuration": "Total duration",
+    "caloriesBurned": "Calories Burned",
+    "timeExercising": "Time Exercising",
+    "averageReps": "Avg Reps/Workout",
+    "avgPerWorkout": "Avg {{count}} per workout",
+    "personalRecords": "Personal Records",
+    "allTime": "All time",
+    "totalBurned": "Total burned",
+    "mostInSession": "Most in one session",
+    "pushups": "Push-ups",
+    "jumprope": "Jump Rope",
+    "workouts": "workouts",
+    "reps": "reps",
+    "minutes": "minutes",
+    "calories": "cal"
+  }
+}
