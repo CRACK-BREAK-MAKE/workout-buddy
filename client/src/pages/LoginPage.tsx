@@ -5,11 +5,13 @@
  * Simple page with Google OAuth button
  */
 
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { PageLayout } from '@/shared/components/layout';
 import { Card, Button, ErrorAlert } from '@/shared/components/ui';
 
 export const LoginPage = () => {
+  const { t } = useTranslation('auth');
   const { loginWithGoogle, isLoading, error, clearError } = useAuth();
 
   return (
@@ -22,10 +24,10 @@ export const LoginPage = () => {
           {/* Title */}
           <div className="space-y-2">
             <h1 className="text-4xl font-bold text-neutral-900 dark:text-neutral-50">
-              Welcome to Workout Buddy
+              {t('auth.login.title')}
             </h1>
             <p className="text-lg text-neutral-700 dark:text-neutral-300">
-              Track your exercises with AI-powered rep counting
+              {t('auth.login.subtitle')}
             </p>
           </div>
 
@@ -57,11 +59,11 @@ export const LoginPage = () => {
                   d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                 />
               </svg>
-              {isLoading ? 'Signing in...' : 'Continue with Google'}
+              {isLoading ? t('auth.callback.processing') : t('auth.login.googleButton')}
             </Button>
 
             <p className="text-sm text-neutral-600 dark:text-neutral-400">
-              By continuing, you agree to our Terms of Service and Privacy Policy
+              {t('auth.login.termsNotice')}
             </p>
           </div>
 
@@ -69,15 +71,15 @@ export const LoginPage = () => {
           <div className="pt-6 space-y-3 text-left">
             <div className="flex items-center gap-3 text-neutral-700 dark:text-neutral-300">
               <span className="text-2xl">✨</span>
-              <span>AI-powered rep counting</span>
+              <span>{t('auth.login.feature1')}</span>
             </div>
             <div className="flex items-center gap-3 text-neutral-700 dark:text-neutral-300">
               <span className="text-2xl">📊</span>
-              <span>Track your progress</span>
+              <span>{t('auth.login.feature2')}</span>
             </div>
             <div className="flex items-center gap-3 text-neutral-700 dark:text-neutral-300">
               <span className="text-2xl">🔒</span>
-              <span>Privacy-first (video never leaves your device)</span>
+              <span>{t('auth.login.feature3')}</span>
             </div>
           </div>
         </Card>

@@ -54,9 +54,9 @@ class Logger {
    * Log warning message
    */
   warn(message: string, context?: LogContext): void {
-    console.warn(`[WARN] ${message}`, context || '');
-
-    if (!this.isDevelopment) {
+    if (this.isDevelopment) {
+      console.warn(`[WARN] ${message}`, context || '');
+    } else {
       this.sendToLoggingService('warn', message, context);
     }
   }
@@ -70,9 +70,9 @@ class Logger {
         ? { name: error.name, message: error.message, stack: error.stack }
         : error;
 
-    console.error(`[ERROR] ${message}`, errorDetails, context || '');
-
-    if (!this.isDevelopment) {
+    if (this.isDevelopment) {
+      console.error(`[ERROR] ${message}`, errorDetails, context || '');
+    } else {
       this.sendToLoggingService('error', message, { error: errorDetails, ...context });
     }
   }

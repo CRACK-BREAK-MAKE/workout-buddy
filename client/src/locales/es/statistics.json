@@ -1,0 +1,21 @@
+{
+  "statistics": {
+    "totalWorkouts": "Entrenamientos Totales",
+    "totalReps": "Repeticiones Totales",
+    "totalDuration": "Duración total",
+    "caloriesBurned": "Calorías Quemadas",
+    "timeExercising": "Tiempo Ejercitando",
+    "averageReps": "Promedio Reps/Entrenamiento",
+    "avgPerWorkout": "Promedio {{count}} por entrenamiento",
+    "personalRecords": "Récords Personales",
+    "allTime": "Todo el tiempo",
+    "totalBurned": "Total quemadas",
+    "mostInSession": "Más en una sesión",
+    "pushups": "Flexiones",
+    "jumprope": "Saltar la Cuerda",
+    "workouts": "entrenamientos",
+    "reps": "repeticiones",
+    "minutes": "minutos",
+    "calories": "cal"
+  }
+}

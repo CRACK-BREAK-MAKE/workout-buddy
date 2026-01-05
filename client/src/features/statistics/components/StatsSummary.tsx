@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { StatCard } from './StatCard';
 import { StatisticsSummary } from '../types/statistics.types';
 
@@ -6,6 +7,7 @@ export interface StatsSummaryProps {
 }
 
 export const StatsSummary = ({ stats }: StatsSummaryProps) => {
+  const { t } = useTranslation('statistics');
   const formatDuration = (seconds: number): string => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
@@ -21,30 +23,30 @@ export const StatsSummary = ({ stats }: StatsSummaryProps) => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           icon="🏋️"
-          label="Total Workouts"
+          label={t('statistics.totalWorkouts')}
           value={stats.total_workouts}
-          subtitle="All time"
+          subtitle={t('statistics.allTime')}
         />
 
         <StatCard
           icon="🔢"
-          label="Total Reps"
+          label={t('statistics.totalReps')}
           value={stats.total_reps.toLocaleString()}
-          subtitle={`Avg ${stats.average_reps_per_workout} per workout`}
+          subtitle={t('statistics.avgPerWorkout', { count: stats.average_reps_per_workout })}
         />
 
         <StatCard
           icon="⏱️"
-          label="Time Exercising"
+          label={t('statistics.timeExercising')}
           value={formatDuration(stats.total_duration_seconds)}
-          subtitle="Total duration"
+          subtitle={t('statistics.totalDuration')}
         />
 
         <StatCard
           icon="🔥"
-          label="Calories Burned"
+          label={t('statistics.caloriesBurned')}
           value={Math.round(stats.total_calories_burned).toLocaleString()}
-          subtitle="Total burned"
+          subtitle={t('statistics.totalBurned')}
         />
       </div>
 
@@ -52,22 +54,22 @@ export const StatsSummary = ({ stats }: StatsSummaryProps) => {
       <div>
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-2xl font-bold text-neutral-900 dark:text-neutral-50">
-            Personal Records
+            {t('statistics.personalRecords')}
           </h3>
           <span className="text-3xl">🏆</span>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <StatCard
             icon="💪"
-            label="Push-ups"
+            label={t('statistics.pushups')}
             value={stats.personal_records['push-up']}
-            subtitle="Most in one session"
+            subtitle={t('statistics.mostInSession')}
           />
           <StatCard
             icon="🦘"
-            label="Jump Rope"
+            label={t('statistics.jumprope')}
             value={stats.personal_records['jump-rope']}
-            subtitle="Most in one session"
+            subtitle={t('statistics.mostInSession')}
           />
         </div>
       </div>

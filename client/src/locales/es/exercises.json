@@ -1,0 +1,28 @@
+{
+  "exercises": {
+    "selector": {
+      "title": "Elige Tu Ejercicio",
+      "subtitle": "Selecciona un ejercicio para comenzar tu entrenamiento"
+    },
+    "pushup": {
+      "name": "Flexiones",
+      "description": "Ejercicio clásico de tren superior. La IA rastrea el ángulo del codo para una forma perfecta.",
+      "difficulty": "Medio",
+      "muscles": {
+        "0": "Pecho",
+        "1": "Tríceps",
+        "2": "Hombros"
+      }
+    },
+    "jumprope": {
+      "name": "Saltar la Cuerda",
+      "description": "Entrenamiento cardiovascular que quema calorías. La IA cuenta tus saltos automáticamente.",
+      "difficulty": "Fácil",
+      "muscles": {
+        "0": "Pantorrillas",
+        "1": "Cardio",
+        "2": "Coordinación"
+      }
+    }
+  }
+}
